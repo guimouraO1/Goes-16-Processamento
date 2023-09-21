@@ -52,13 +52,11 @@ def remap(path, variable, extent, resolution, h, a, b, longitude):
         # Read scale/offset from file
         scale, offset = getScaleOffset(path, variable) 
       
-    connectionInfo = 'HDF5:\"' + path + '\"://' + variable
+    connectionInfo = f'NETCDF:\"' + path + '\"://' + variable
 	
-    # Read the datasat
+    # Lendo os metadados do cabecalho
     raw = gdal.Open(connectionInfo, gdal.GA_ReadOnly)          
-    
-    # Define KM_PER_DEGREE
-    KM_PER_DEGREE = 111.32
+
 
     # GOES Spatial Reference System
     sourcePrj = osr.SpatialReference()
@@ -73,6 +71,7 @@ def remap(path, variable, extent, resolution, h, a, b, longitude):
     raw.SetGeoTransform(getGeoT(GOES_EXTENT, raw.RasterYSize, raw.RasterXSize))  
 
     # Compute grid dimension
+    KM_PER_DEGREE = 111.32
     sizex = int(((extent[2] - extent[0]) * KM_PER_DEGREE) / resolution)
     sizey = int(((extent[3] - extent[1]) * KM_PER_DEGREE) / resolution)
     
@@ -85,15 +84,9 @@ def remap(path, variable, extent, resolution, h, a, b, longitude):
     # Setup projection and geo-transformation
     grid.SetProjection(targetPrj.ExportToWkt())
     grid.SetGeoTransform(getGeoT(extent, grid.RasterYSize, grid.RasterXSize))
-
-    # Perform the projection/resampling 
-    print ('Remapping...')#, path)
-        
-    start = t.time()
+    
     
     gdal.ReprojectImage(raw, grid, sourcePrj.ExportToWkt(), targetPrj.ExportToWkt(), gdal.GRA_NearestNeighbour, options=['NUM_THREADS=ALL_CPUS']) 
-    
-    print ('Remap finished! Time:', round((t.time() - start),2), 'seconds')
                
     # Read grid data
     array = grid.ReadAsArray()
@@ -112,7 +105,8 @@ def remap(path, variable, extent, resolution, h, a, b, longitude):
 
 	# Close file
     raw = None
+    del raw
 	
     return grid
-#---------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------
+
+

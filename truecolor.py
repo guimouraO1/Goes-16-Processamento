@@ -10,7 +10,6 @@ import cartopy.io.shapereader as shpreader                   # Import shapefiles
 import time as t                                             # Time access and conversion
 import math                                                  # Import math
 import os 												     # Miscellaneous operating system interfaces
-from os.path import dirname, abspath                         # Return a normalized absolutized version of the pathname path 
 from remap import remap                                      # Import the Remap function
 import warnings
 from pyorbital import astronomy
@@ -175,14 +174,10 @@ path_ch03 = f'{dir_in}goes/OR_ABI-L2-CMIPF-M6C03_G16_s20232641220207_e2023264122
 # For the log
 path = path_ch01
 
-print(path_ch01)
-print(path_ch02)
-print(path_ch03)
-
 # Read the image
 file_ch01 = Dataset(path_ch01)
 
-# Read the satellite 
+# Read the satellite = Goes16
 satellite = getattr(file_ch01, 'platform_ID')
 
 # Read the band number
@@ -213,7 +208,8 @@ h = file_ch01.variables['goes_imager_projection'].perspective_point_height
 add_seconds = int(file_ch01.variables['time_bounds'][0])
 date = datetime(2000,1,1,12) + timedelta(seconds=add_seconds)
 date_formated = date.strftime('%Y-%m-%d %H:%M UTC')
-date_file = date.strftime('%Y%m%d%H%M')
+date_file = date.strftime('%Y%m%d_%H%M%S')
+date_img = date.strftime('%d-%b-%Y %H:%M UTC')
 
 # Brasil
 extent = [-90.0, -40.0, -20.0, 10.0]
@@ -237,7 +233,6 @@ data_ch01 = grid.ReadAsArray()
 #------------------------------------------------------------------------------------------------------
 # band02
 file_ch02 = Dataset(path_ch02)
-variable = "CMI"
 # reprojetando
 grid = remap(path_ch02, variable, extent, resolution, h, a, b, longitude)
 # Lê o retorno da função
@@ -246,14 +241,11 @@ data_ch02 = grid.ReadAsArray()
 #------------------------------------------------------------------------------------------------------
 # band03
 file_ch03 = Dataset(path_ch03)
-variable = "CMI"
 # reprojetando
 grid = remap(path_ch03, variable, extent, resolution, h, a, b, longitude)
 # Lê o retorno da função 
 data_ch03 = grid.ReadAsArray()
 #------------------------------------------------------------------------------------------------------
-
-
 
 
 #------------------------------------------------------------------------------------------------------
@@ -263,7 +255,8 @@ utc_time, lats, lons, sun_zenith, data_ch01, data_ch02, data_ch03 = calculating_
 # Applying the Rayleigh correction
 data_ch01, data_ch02 = applying_rayleigh_correction(utc_time, lons, lats, sun_zenith, data_ch01, data_ch02)
 
-# Fazendo calculo True color
+# Fazendo calculo True color com rayleigh correction
+
 R = data_ch02
 G = (data_ch01 + data_ch02) / 2 * 0.93 + 0.07 * data_ch03 
 B = data_ch01
@@ -281,22 +274,12 @@ RGB = np.stack([R, G, B], axis=2)
 product = "truecolor" 
 
 # Formatando a descricao a ser plotada na imagem
-description = f' GOES-{satellite} Natural True Color {date_file}'
+description = f' GOES-{satellite} Natural True Color {date_img}'
 institution = "CEPAGRI - UNICAMP"
 
 #------------------------------------------------------------------------------------------------------  
-# Plot configuration
-plot_config = {
-"dpi": 150, 
-"countries_color": 'cyan', "countries_width": data_ch01.shape[0] * 0.00100,
-"continents_color": 'cyan', "continents_width": data_ch01.shape[0] * 0.00025,
-"grid_color": 'white', "grid_width": data_ch01.shape[0] * 0.00025, "grid_interval": 10.0,
-"title_text": "GOES-" + satellite[1:3] + " True color RGB ", "title_size": int(data_ch01.shape[1] * 0.005), "title_x_offset": int(data_ch01.shape[1] * 0.01), "title_y_offset": data_ch01.shape[0] - int(data_ch01.shape[0] * 0.016), 
-"thick_interval": 0, "cbar_labelsize": int(data_ch01.shape[0] * 0.005), "cbar_labelpad": -int(data_ch01.shape[0] * 0.0),
-"file_name_id_1": satellite,  "file_name_id_2": product
-}
-
-fig = plt.figure(figsize=(data_ch01.shape[1]/float(plot_config["dpi"] + 5), data_ch01.shape[0]/float(plot_config["dpi"])), dpi=plot_config["dpi"], frameon=True, edgecolor='black', facecolor='black')
+dpi = 150
+fig = plt.figure(figsize=(data_ch01.shape[1]/float(dpi + 5), data_ch01.shape[0]/float(dpi)), dpi=dpi, frameon=True, edgecolor='black', facecolor='black')
 
 # Define the projection
 proj = ccrs.PlateCarree()
@@ -315,7 +298,7 @@ adicionando_linhas(ax)
 # Define the image extent
 img_extent = [extent[0], extent[2], extent[1], extent[3]]
 
-# Plot the image
+# Plota a imagem
 img = ax.imshow(RGB, origin='upper', extent=img_extent, zorder=1)
 
 # Adicionando descricao da imagem
@@ -325,7 +308,7 @@ adicionando_descricao_imagem(description, institution, ax, fig)
 adicionando_logos(fig)
 
 # Salvando a imagem de saida
-plt.savefig(dir_out + plot_config["file_name_id_2"] + "_" + date_file + '.png', facecolor='black')
+plt.savefig(dir_out + product + "_" + date_file + '.png', facecolor='black')
 
 delete_xml(f'{dir_in}goes/')
 
