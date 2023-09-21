@@ -19,6 +19,7 @@ from pyorbital.orbital import get_observer_look
 from multiprocessing import Process  # Utilitario para multiprocessamento
 import logging
 
+
 def adicionando_linhas(ax):
     # Adicionando linhas da costa
     ax.coastlines(resolution='10m', color='cyan', linewidth=0.5)
@@ -28,6 +29,7 @@ def adicionando_linhas(ax):
     gl = ax.gridlines(crs=ccrs.PlateCarree(), color='white', alpha=0.7, linestyle='--', linewidth=0.2, xlocs=np.arange(-180, 180, 5), ylocs=np.arange(-90, 90, 5))
     gl.top_labels = False
     gl.right_labels = False
+
 
 def area_para_recorte(v_extent):
     
@@ -47,6 +49,7 @@ def area_para_recorte(v_extent):
         resolution = 2.0
     return extent, resolution
 
+
 def adicionando_shapefile(v_extent, ax):
     if v_extent == 'br':
         # Adicionando o shapefile dos estados brasileiros
@@ -60,6 +63,7 @@ def adicionando_shapefile(v_extent, ax):
         ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='cyan', facecolor='none', linewidth=0.7)
         shapefile = list(shpreader.Reader(dir_shapefiles + 'campinas/campinas').geometries())
         ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='yellow', facecolor='none', linewidth=1)
+
 #Modificado
 def adicionando_descricao_imagem(description, institution, ax, fig, cruz=False, truecolor=False):
     if truecolor:
@@ -80,6 +84,7 @@ def adicionando_descricao_imagem(description, institution, ax, fig, cruz=False, 
         cax1.text(0.85, 0.13, institution, color='yellow', size=10)  # Adicionando texto
         cax1.xaxis.set_visible(False)  # Removendo rótulos do eixo X
         cax1.yaxis.set_visible(False)  # Removendo rótulos do eixo Y
+
 
 def calculating_lons_lats(date, extent, data_ch01, data_ch02, data_ch03):
         
@@ -107,6 +112,7 @@ def calculating_lons_lats(date, extent, data_ch01, data_ch02, data_ch03):
     data_ch03 = (data_ch03)/(np.cos(np.deg2rad(sun_zenith)))
 
     return utc_time, lats, lons, sun_zenith, data_ch01, data_ch02, data_ch03
+
 
 def applying_rayleigh_correction(file_ch01, utc_time, lons, lats, sun_zenith, data_ch01, data_ch02, longitude):
     # Altitude do satélite
@@ -138,6 +144,7 @@ def applying_rayleigh_correction(file_ch01, utc_time, lons, lats, sun_zenith, da
 
     return data_ch01, data_ch02 
 
+
 def adicionando_logos(fig):
     # Adicionando os logotipos
     logo_noaa = plt.imread(dir_logos + 'NOAA_Logo.png')  # Lendo o arquivo do logotipo
@@ -146,6 +153,7 @@ def adicionando_logos(fig):
     fig.figimage(logo_noaa, 32, 240, zorder=3, alpha=0.6, origin='upper')  # Plotando logotipo
     fig.figimage(logo_goes, 10, 160, zorder=3, alpha=0.6, origin='upper')  # Plotando logotipo
     fig.figimage(logo_cepagri, 10, 80, zorder=3, alpha=0.8, origin='upper')  # Plotando logotipo
+
 
 def apply_cira_stretch(band_data):
     
@@ -158,8 +166,8 @@ def apply_cira_stretch(band_data):
     band_data /= denom
     return 1 + band_data
 
+
 def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
-    
     
     start = t.time() 
     
