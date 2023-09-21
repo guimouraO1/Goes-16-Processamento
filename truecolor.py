@@ -64,26 +64,17 @@ def adicionando_shapefile(v_extent, ax):
         shapefile = list(shpreader.Reader(dir_shapefiles + 'campinas/campinas').geometries())
         ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='yellow', facecolor='none', linewidth=1)
 
-#Modificado
-def adicionando_descricao_imagem(description, institution, ax, fig, cruz=False, truecolor=False):
-    if truecolor:
-        cax1 = fig.add_axes([ax.get_position().x0 + 0.003, ax.get_position().y0 - 0.026, ax.get_position().width - 0.003, 0.0125])
-        cax1.patch.set_color('black') 
-        cax1.text(0, 0.13, description, color='white', size=6)  # Adicionando texto
-        cax1.text(0.85, 0.13, institution, color='yellow', size=6)  # Adicionando texto
-        cax1.xaxis.set_visible(False)  # Removendo rótulos do eixo X
-        cax1.yaxis.set_visible(False)  # Removendo rótulos do eixo Y
-    # Criando novos eixos de acordo com a posição da imagem   
-    else:
-        cax1 = fig.add_axes([ax.get_position().x0 + 0.003, ax.get_position().y0 - 0.026, ax.get_position().width - 0.003, 0.0125])
-        cax1.patch.set_color('black')  # Alterando a cor do novo eixo
-        cax1.text(0, 0.13, description, color='white', size=10)  # Adicionando texto
-        if cruz:
-            cruzStr = '+'
-            cax1.text(0.190, 0.13, cruzStr, color='red', size=12)  # Adicionando símbolo "+"
-        cax1.text(0.85, 0.13, institution, color='yellow', size=10)  # Adicionando texto
-        cax1.xaxis.set_visible(False)  # Removendo rótulos do eixo X
-        cax1.yaxis.set_visible(False)  # Removendo rótulos do eixo Y
+
+def adicionando_descricao_imagem(description, institution, ax, fig, cruz=False):
+    cax1 = fig.add_axes([ax.get_position().x0 + 0.003, ax.get_position().y0 - 0.026, ax.get_position().width - 0.003, 0.0125])
+    cax1.patch.set_color('black')  # Alterando a cor do novo eixo
+    cax1.text(0, 0.13, description, color='white', size=10)  # Adicionando texto
+    if cruz:
+        cruzStr = '+'
+        cax1.text(0.190, 0.13, cruzStr, color='red', size=12)  # Adicionando símbolo "+"
+    cax1.text(0.85, 0.13, institution, color='yellow', size=10)  # Adicionando texto
+    cax1.xaxis.set_visible(False)  # Removendo rótulos do eixo X
+    cax1.yaxis.set_visible(False)  # Removendo rótulos do eixo Y
 
 
 def calculating_lons_lats(date, extent, data_ch01, data_ch02, data_ch03):
@@ -284,8 +275,12 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     ax.imshow(RGB, origin='upper', extent=img_extent, zorder=1)
 
     if v_extent == 'sp':
-        # Adicionando descricao da imagem para sp
-        adicionando_descricao_imagem(description, institution, ax, fig, truecolor=True)
+        cax1 = fig.add_axes([ax.get_position().x0 + 0.003, ax.get_position().y0 - 0.026, ax.get_position().width - 0.003, 0.0125])
+        cax1.patch.set_color('black') 
+        cax1.text(0, 0.13, description, color='white', size=6)  # Adicionando texto
+        cax1.text(0.85, 0.13, institution, color='yellow', size=6)  # Adicionando texto
+        cax1.xaxis.set_visible(False)  # Removendo rótulos do eixo X
+        cax1.yaxis.set_visible(False)  # Removendo rótulos do eixo Y
     else:
         # Adicionando descricao da imagem para br
         adicionando_descricao_imagem(description, institution, ax, fig)
