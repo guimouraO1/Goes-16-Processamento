@@ -142,18 +142,31 @@ def apply_cira_stretch(band_data):
     return 1 + band_data
 
 
+def delete_xml(dir_in):
+    # Listar todos os arquivos no diretório
+    arquivos = os.listdir(dir_in)
+
+    # Filtrar os arquivos com extensão .nc.aux.xml
+    arquivos_aux = [arquivo for arquivo in arquivos if arquivo.endswith('.nc.aux.xml')]
+
+    # Excluir os arquivos auxiliares
+    for arquivo in arquivos_aux:
+        caminho_completo = os.path.join(dir_in, arquivo)
+        os.remove(caminho_completo)
+
 
 start = t.time()  
-dir_in = f'/home/guimoura/Documentos/projeto/TrueColor/'
+dir_in = f'/mnt/e/truecolor/'
+#dir_in = f'/home/guimoura/Documentos/projeto/TrueColor/'
 dir_shapefiles = f'{dir_in}shapefiles/'
 dir_colortables = f'{dir_in}colortables/'
 dir_logos = f'{dir_in}logos/'
 dir_out = f'{dir_in}output/'
 
 # Bands files
-path_ch01 = f'{dir_in}goes/OR_ABI-L2-CMIPF-M6C01_G16_s20232631330206_e20232631339514_c20232631339575.nc'
-path_ch02 = f'{dir_in}goes/OR_ABI-L2-CMIPF-M6C02_G16_s20232631330206_e20232631339514_c20232631339567.nc'
-path_ch03 = f'{dir_in}goes/OR_ABI-L2-CMIPF-M6C03_G16_s20232631330206_e20232631339514_c20232631339585.nc'
+path_ch01 = f'{dir_in}goes/OR_ABI-L2-CMIPF-M6C01_G16_s20232641220207_e20232641229515_c20232641229582.nc'
+path_ch02 = f'{dir_in}goes/OR_ABI-L2-CMIPF-M6C02_G16_s20232641220207_e20232641229515_c20232641229574.nc'
+path_ch03 = f'{dir_in}goes/OR_ABI-L2-CMIPF-M6C03_G16_s20232641220207_e20232641229515_c20232641229581.nc'
 
 # path_ch01 = f'{dir_in}goes/OR_ABI-L2-CMIPF-M6C01_G16_s20232632030204_e20232632039512_c20232632039570.nc'
 # path_ch02 = f'{dir_in}goes/OR_ABI-L2-CMIPF-M6C02_G16_s20232632030204_e20232632039512_c20232632039572.nc'
@@ -313,5 +326,7 @@ adicionando_logos(fig)
 
 # Salvando a imagem de saida
 plt.savefig(dir_out + plot_config["file_name_id_2"] + "_" + date_file + '.png', facecolor='black')
+
+delete_xml(f'{dir_in}goes/')
 
 print('Total processing time:', round((t.time() - start),2), 'seconds.') 
