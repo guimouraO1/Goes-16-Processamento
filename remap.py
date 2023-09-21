@@ -43,7 +43,7 @@ def remap(path, variable, extent, resolution, h, a, b, longitude, x1, y1, x2, y2
     offset = 0
     
     # GOES Extent (satellite projection) [llx, lly, urx, ury]
-    GOES_EXTENT = [x1, y1, x2, y2]
+    GOES_EXTENT = [-5434894.885056, -5434894.885056, 5434894.885056, 5434894.885056]
     
     # Setup NetCDF driver
     gdal.SetConfigOption('GDAL_NETCDF_BOTTOMUP', 'NO')
@@ -53,8 +53,6 @@ def remap(path, variable, extent, resolution, h, a, b, longitude, x1, y1, x2, y2
         scale, offset = getScaleOffset(path, variable) 
       
     connectionInfo = 'HDF5:\"' + path + '\"://' + variable
-    
-    print(connectionInfo)
 	
     # Read the datasat
     raw = gdal.Open(connectionInfo)          
