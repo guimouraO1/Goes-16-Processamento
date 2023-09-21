@@ -8,11 +8,6 @@ warnings.filterwarnings("ignore")
 gdal.PushErrorHandler('CPLQuietErrorHandler') 
 #---------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------
-def exportImage(image,path):
-    driver = gdal.GetDriverByName('netCDF')
-    return driver.CreateCopy(path,image,0)
-#---------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------
 def getGeoT(extent, nlines, ncols):
     # Compute resolution based on data dimension
     resx = (extent[2] - extent[0]) / ncols
