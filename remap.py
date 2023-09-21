@@ -34,7 +34,7 @@ def getScaleOffset(path, variable):
     return scale, offset
 #---------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------    
-def remap(path, variable, extent, resolution, h, a, b, longitude, x1, y1, x2, y2):
+def remap(path, variable, extent, resolution, h, a, b, longitude):
     
     # Default scale    
     scale = 1
@@ -55,7 +55,7 @@ def remap(path, variable, extent, resolution, h, a, b, longitude, x1, y1, x2, y2
     connectionInfo = 'HDF5:\"' + path + '\"://' + variable
 	
     # Read the datasat
-    raw = gdal.Open(connectionInfo)          
+    raw = gdal.Open(connectionInfo, gdal.GA_ReadOnly)          
     
     # Define KM_PER_DEGREE
     KM_PER_DEGREE = 111.32

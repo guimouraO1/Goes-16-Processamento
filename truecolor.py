@@ -142,18 +142,6 @@ def apply_cira_stretch(band_data):
     return 1 + band_data
 
 
-def excluindo_arquivos_xml(dir_in):
-    # Listar todos os arquivos no diretório
-    arquivos = os.listdir(dir_in)
-
-    # Filtrar os arquivos com extensão .nc.aux.xml
-    arquivos_aux = [arquivo for arquivo in arquivos if arquivo.endswith('.nc.aux.xml')]
-
-    # Excluir os arquivos auxiliares
-    for arquivo in arquivos_aux:
-        caminho_completo = os.path.join(dir_in, arquivo)
-        os.remove(caminho_completo)
-
 
 start = t.time()  
 dir_in = f'/home/guimoura/Documentos/projeto/TrueColor/'
@@ -207,11 +195,6 @@ a = file_ch01.variables['goes_imager_projection'].semi_major_axis
 b = file_ch01.variables['goes_imager_projection'].semi_minor_axis
 # Calculate the image extent 
 h = file_ch01.variables['goes_imager_projection'].perspective_point_height
-x1 = file_ch01.variables['x_image_bounds'][0] * h 
-x2 = file_ch01.variables['x_image_bounds'][1] * h 
-y1 = file_ch01.variables['y_image_bounds'][1] * h 
-y2 = file_ch01.variables['y_image_bounds'][0] * h 
-
 
 # Pega data do file
 add_seconds = int(file_ch01.variables['time_bounds'][0])
@@ -234,7 +217,7 @@ extent = [-90.0, -40.0, -20.0, 10.0]
 # band01
 variable = "CMI"
 # reprojetando
-grid = remap(path_ch01, variable, extent, resolution, h, a, b, longitude, x1, y1, x2, y2)
+grid = remap(path_ch01, variable, extent, resolution, h, a, b, longitude)
 # Lê o retorno da função
 data_ch01 = grid.ReadAsArray()
 
@@ -243,7 +226,7 @@ data_ch01 = grid.ReadAsArray()
 file_ch02 = Dataset(path_ch02)
 variable = "CMI"
 # reprojetando
-grid = remap(path_ch02, variable, extent, resolution, h, a, b, longitude, x1, y1, x2, y2)
+grid = remap(path_ch02, variable, extent, resolution, h, a, b, longitude)
 # Lê o retorno da função
 data_ch02 = grid.ReadAsArray()
 
@@ -252,7 +235,7 @@ data_ch02 = grid.ReadAsArray()
 file_ch03 = Dataset(path_ch03)
 variable = "CMI"
 # reprojetando
-grid = remap(path_ch03, variable, extent, resolution, h, a, b, longitude, x1, y1, x2, y2)
+grid = remap(path_ch03, variable, extent, resolution, h, a, b, longitude)
 # Lê o retorno da função 
 data_ch03 = grid.ReadAsArray()
 #------------------------------------------------------------------------------------------------------
@@ -330,7 +313,5 @@ adicionando_logos(fig)
 
 # Salvando a imagem de saida
 plt.savefig(dir_out + plot_config["file_name_id_2"] + "_" + date_file + '.png', facecolor='black')
-
-excluindo_arquivos_xml(dir_in)
 
 print('Total processing time:', round((t.time() - start),2), 'seconds.') 
