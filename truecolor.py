@@ -242,9 +242,6 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     RGB = np.stack([R, G, B], axis=2)		
     #------------------------------------------------------------------------------------------------------
 
-    # Nome do produto
-    product = rgb_type
-
     # Formatando a descricao a ser plotada na imagem
     description = f' GOES-{satellite} Natural True Color {date_img}'
     institution = "CEPAGRI - UNICAMP"
