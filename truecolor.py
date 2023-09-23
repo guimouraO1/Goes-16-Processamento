@@ -160,6 +160,7 @@ def apply_cira_stretch(band_data):
 
 def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     
+    # Calcula o tempo de processamento True Color
     start = t.time() 
     
     # Lê a imagem da banda 01
@@ -167,9 +168,6 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
 
     # Lê o identificador do satélite
     satellite = getattr(file_ch01, 'platform_ID')
-
-    # Resolução
-    resolution = 3.0
 
     # Lê a longitude central
     longitude = file_ch01.variables['goes_imager_projection'].longitude_of_projection_origin
@@ -204,7 +202,6 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     # Lê o retorno da função 
     data_ch03 = grid.ReadAsArray()
     #------------------------------------------------------------------------------------------------------
-
 
     #------------------------------------------------------------------------------------------------------
     # Calculando correção zenith
@@ -261,7 +258,8 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     # Fecha a janela para limpar a memoria
     plt.close()
 
-
+    # Tempo de processamento True color
+    logging.info('Total processing time True Color:', round((t.time() - start),2), 'seconds.') 
 
 
 def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands):
@@ -329,7 +327,7 @@ def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_ba
         # Limpa a lista de processos
         process_sp.clear()
 
-        
+
 dir_main =  f'/mnt/e/truecolor/' 
 dir_in = f'/mnt/e/truecolor/goes/'
 #dir_in = f'/home/guimoura/Documentos/projeto/TrueColor/'
