@@ -28,9 +28,8 @@ from multiprocessing import Process  # Utilitario para multiprocessamento
 ###########################################################################
 
 
-
 def process_airmass(rgb_type, v_extent, path_ch08=None, path_ch10=None, path_ch12=None, path_ch13=None):
-    
+    global dir_out
     start = time.time()  
 
     # Read the file using the NetCDF library
@@ -176,10 +175,10 @@ def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_ba
             ch13 = new_bands['13']
             
             # Montando dicionario de argumentos
-            kwargs = {'ch08': f'{dir_in}band08/{ch08}', 
-                      'ch10': f'{dir_in}band10/{ch10}', 
-                      'ch12': f'{dir_in}band12/{ch12}',
-                      'ch13': f'{dir_in}band13/{ch13}'
+            kwargs = {'path_ch08': f'{dir_in}band08/{ch08}', 
+                      'path_ch10': f'{dir_in}band10/{ch10}', 
+                      'path_ch12': f'{dir_in}band12/{ch12}',
+                      'path_ch13': f'{dir_in}band13/{ch13}'
                       }
             # Tenta realizar o processamento da imagem
             try:
@@ -211,10 +210,10 @@ def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_ba
             ch13 = new_bands['13']
             
             # Montando dicionario de argumentos
-            kwargs = {'ch08': f'{dir_in}band08/{ch08}', 
-                      'ch10': f'{dir_in}band10/{ch10}', 
-                      'ch12': f'{dir_in}band12/{ch12}',
-                      'ch13': f'{dir_in}band13/{ch13}'
+            kwargs = {'path_ch08': f'{dir_in}band08/{ch08}', 
+                      'path_ch10': f'{dir_in}band10/{ch10}', 
+                      'path_ch12': f'{dir_in}band12/{ch12}',
+                      'path_ch13': f'{dir_in}band13/{ch13}'
                       }
             # Tenta realizar o processamento da imagem
             try:
@@ -236,11 +235,9 @@ def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_ba
         process_sp.clear()
 
 
-
-
 dir_main =  f'/mnt/e/truecolor/' 
 dir_out = f'{dir_main}output/'
-dir_in = f'/mnt/e/truecolor/goes/'
+dir_in = f'{dir_main}goes/'
 dir_shapefiles = f'{dir_main}shapefiles/'
 dir_colortables = f'{dir_main}colortables/'
 dir_logos = f'{dir_main}logos/'

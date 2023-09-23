@@ -167,7 +167,7 @@ def apply_cira_stretch(band_data):
 
 
 def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
-    
+    global dir_out
     # Calcula o tempo de processamento True Color
     start = t.time() 
     # Lê a imagem da banda 01
