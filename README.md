@@ -100,13 +100,13 @@ Este código é distribuído sob a licença MIT. Consulte o arquivo LICENSE para
 
 ## Example: NOAA GOES-16 truecolor Processing on CEPAGRI
 
-![GOES-16 Satellite](shapefiles/truecolor_br.png)
+![GOES-16 Satellite](shapefiles/exemplos/truecolor_br.png)
 ---
-![GOES-16 Satellite](shapefiles/truecolor_sp.png)
+![GOES-16 Satellite](shapefiles/exemplos/truecolor_sp.png)
 ---
-![GOES-16 Satellite](shapefiles/airmass_br.png)
+![GOES-16 Satellite](shapefiles/exemplos/airmass_br.png)
 ---
-![GOES-16 Satellite](shapefiles/airmass_sp.png)
+![GOES-16 Satellite](shapefiles/exemplos/airmass_sp.png)
 ---
 
 **Readme.md Author:** [Guilherme de Moura Oliveira]
