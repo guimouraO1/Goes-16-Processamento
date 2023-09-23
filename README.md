@@ -111,6 +111,6 @@ Este código é distribuído sob a licença MIT. Consulte o arquivo LICENSE para
 ![GOES-16 Satellite](shapefiles/exemplos/airmass_sp.png)
 ---
 
-**Readme.md Author:** [Guilherme de Moura Oliveira]
+**Author:** [Guilherme de Moura Oliveira]
 **Contact:** [guimoura@unicamp.br]
 **Last Updated:** [22/09/2023]
