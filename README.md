@@ -7,7 +7,7 @@ Este repositório contém código Python para processar imagens do satélite GOE
 O repositório está estruturado da seguinte forma:
 
 ```
-/truecolor
+/Goes-16-Processamento
     /colortables
     /logos
     /shapefiles
