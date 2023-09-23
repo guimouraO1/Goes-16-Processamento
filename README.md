@@ -65,7 +65,8 @@ conda create --name goes -c conda-forge matplotlib numpy netCDF4 cartopy pyorbit
 ## Configuração
 
 Antes de executar os scripts, você precisa criar as pastas goes/ e band?? que vc vai utilizar e os output/airmass e output/truecolor.
-Configure algumas variáveis no script:
+
+-Configure algumas variáveis no script:
 
 - `dir_main`: O diretório raiz do projeto.
 - `new_bands`: Coloque os arquivos netCDF4 das bandas dentro do dicionário de dados de banda correta.
