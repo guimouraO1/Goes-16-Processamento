@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt              # Import the Matplotlib package
 import numpy as np                           # Import the Numpy package
 from netCDF4 import Dataset                  # Import the NetCDF Python interface
 import cartopy, cartopy.crs as ccrs          # Plot maps
-import cartopy.io.shapereader as shpreader   # Import shapefiles
-import math                                  # Import math
 from datetime import datetime, timedelta     # Library to convert julian day to dd-mm-yyyy
 from truecolor import area_para_recorte
 from truecolor import adicionando_shapefile
