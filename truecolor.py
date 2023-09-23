@@ -160,13 +160,10 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     
     # Calcula o tempo de processamento True Color
     start = t.time() 
-    
     # Lê a imagem da banda 01
     file_ch01 = Dataset(ch01)
-
     # Lê o identificador do satélite
     satellite = getattr(file_ch01, 'platform_ID')
-
     # Lê a longitude central
     longitude = file_ch01.variables['goes_imager_projection'].longitude_of_projection_origin
 

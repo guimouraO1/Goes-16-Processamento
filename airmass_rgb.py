@@ -10,7 +10,7 @@ from datetime import datetime, timedelta     # Library to convert julian day to 
 from truecolor import area_para_recorte
 from remap import remap
 import time as time    
-
+import logging
 
 
 print('Script started.')
@@ -154,3 +154,6 @@ plt.annotate(plot_config["title_text"] + " " + date_formated , xy=(plot_config["
 
 # Save the image
 plt.savefig(plot_config["file_name_id_1"] + "_" + plot_config["file_name_id_2"] + "_" + date_file + '.png', bbox_inches='tight', pad_inches=0, facecolor='black')
+
+# Tempo de processamento True color
+logging.info('Total processing time Airmass:', round((time.time() - start),2), 'seconds.') 
