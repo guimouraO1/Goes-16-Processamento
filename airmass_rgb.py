@@ -1,20 +1,3 @@
-#######################################################################################################
-# LICENSE
-# Copyright (C) 2019 - INPE - NATIONAL INSTITUTE FOR SPACE RESEARCH - BRAZIL
-# This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
-# General Public License as published by the Free Software Foundation, either version 3 of the License, 
-# or (at your option) any later version.
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
-# Public License for more details.
-# You should have received a copy of the GNU General Public License along with this program. 
-# If not, see http://www.gnu.org/licenses/.
-#######################################################################################################
-#------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------
-# Python Script: Airmass RGB
-# Quick Guide: http://rammb.cira.colostate.edu/training/visit/quick_guides/QuickGuide_GOESR_AirMassRGB_final.pdf
-#------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
 # Required modules
 import matplotlib.pyplot as plt              # Import the Matplotlib package
@@ -27,7 +10,7 @@ from datetime import datetime, timedelta     # Library to convert julian day to 
 #------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
 # File to read
-image1 = "OR_ABI-L2-CMIPF-M6C08_G16_s20191841700283_e20191841709591_c20191841710070.nc"
+image1 = "OR_ABI-L2-CMIPF-M6C08_G16_s20232641020207_e20232641029515_c20232641029592.nc"
 
 # Read the file using the NetCDF library
 file1 = Dataset(image1)
@@ -66,7 +49,7 @@ data1 = file1.variables['CMI'][:,:][::f ,::f] - 273.15
 #------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
 # File to read
-image2 = "OR_ABI-L2-CMIPF-M6C10_G16_s20191841700283_e20191841710002_c20191841710078.nc"
+image2 = "OR_ABI-L2-CMIPF-M6C10_G16_s20232641020207_e20232641029526_c20232641029583.nc"
 
 # Read the file using the NetCDF library
 file2 = Dataset(image2)
@@ -76,7 +59,7 @@ data2 = file2.variables['CMI'][:,:][::f ,::f] - 273.15
 #------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
 # File to read
-image3 = "OR_ABI-L2-CMIPF-M6C12_G16_s20191841700283_e20191841709596_c20191841710078.nc"
+image3 = "OR_ABI-L2-CMIPF-M6C12_G16_s20232641020207_e20232641029521_c20232641029598.nc"
 
 # Read the file using the NetCDF library
 file3 = Dataset(image3)
@@ -86,7 +69,7 @@ data3 = file3.variables['CMI'][:,:][::f ,::f] - 273.15
 #------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
 # File to read
-image4 = "OR_ABI-L2-CMIPF-M6C13_G16_s20191841700283_e20191841710002_c20191841710081.nc"
+image4 = "OR_ABI-L2-CMIPF-M6C13_G16_s20232641020207_e20232641029526_c20232641029588.nc"
 
 # Read the file using the NetCDF library
 file4 = Dataset(image4)
@@ -149,36 +132,28 @@ plot_config = {
 #------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
 # Choose the plot size (width x height, in inches)
-fig = plt.figure(figsize=(data1.shape[1]/float(plot_config["dpi"]), data1.shape[0]/float(plot_config["dpi"])), dpi=plot_config["dpi"])
 
+fig = plt.figure(figsize=(data1.shape[1]/float(plot_config["dpi"]), data1.shape[0]/float(plot_config["dpi"])), dpi=plot_config["dpi"])
+d_p_i = 150
+
+
+#fig = plt.figure(figsize=(2000 / float(d_p_i), 2000 / float(d_p_i)), frameon=True, dpi=d_p_i, edgecolor='black', facecolor='black')
 # Define the projection
 proj = ccrs.Geostationary(central_longitude=longitude, satellite_height=h)
+
+extent = [-90.0, -40.0, -20.0, 10.0]  # Min lon, Min lat, Max lon, Max lat
+#proj = ccrs.PlateCarree()
 img_extent = (x.min(), x.max(), y.min(), y.max())
+# img_extent = [extent[0], extent[2], extent[1], extent[3]]
 
 # Use the Geostationary projection in cartopy
 ax = plt.axes([0, 0, 1, 1], projection=proj)
 
 # Plot the image
 img = ax.imshow(RGB, origin='upper', extent=img_extent, zorder=3)
-
-# Add countries
-shapefile = list(shpreader.Reader('ne_50m_admin_0_countries.shp').geometries())
-ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor=plot_config["countries_color"],facecolor='none', linewidth=plot_config["countries_width"], zorder=4)
-
-# Add continents
-shapefile = list(shpreader.Reader('ne_10m_coastline.shp').geometries())
-ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor=plot_config["continents_color"],facecolor='none', linewidth=plot_config["continents_width"], zorder=5)
-  
-# Add coastlines, borders and gridlines
-ax.gridlines(color=plot_config["grid_color"], alpha=0.5, linestyle='--', linewidth=plot_config["grid_width"], xlocs=np.arange(-180, 180, plot_config["grid_interval"]), ylocs=np.arange(-180, 180, plot_config["grid_interval"]), draw_labels=False, zorder=6)
-
-# Remove the outline border
-ax.outline_patch.set_visible(False)
   
 # Add a title
 plt.annotate(plot_config["title_text"] + " " + date_formated , xy=(plot_config["title_x_offset"], plot_config["title_y_offset"]), xycoords='figure pixels', fontsize=plot_config["title_size"], fontweight='bold', color='white', bbox=dict(boxstyle="round",fc=(0.0, 0.0, 0.0), ec=(1., 1., 1.)), zorder=7)
 
 # Save the image
 plt.savefig(plot_config["file_name_id_1"] + "_" + plot_config["file_name_id_2"] + "_" + date_file + '.png', bbox_inches='tight', pad_inches=0, facecolor='black')
-#------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------

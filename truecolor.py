@@ -171,23 +171,8 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     # Resolução
     resolution = 3.0
 
-    # Lê a resolução da banda
-    band_resolution_km = getattr(file_ch01, 'spatial_resolution')
-    band_resolution_km = float(band_resolution_km[:band_resolution_km.find("km")])
-
-    # Fator de divisão para reduzir o tamanho da imagem
-    f = math.ceil(float(resolution / band_resolution_km))
-    # Limpando memória
-    del band_resolution_km
-
     # Lê a longitude central
     longitude = file_ch01.variables['goes_imager_projection'].longitude_of_projection_origin
-    # Lê o semi-eixo maior
-    a = file_ch01.variables['goes_imager_projection'].semi_major_axis
-    # Lê o semi-eixo menor
-    b = file_ch01.variables['goes_imager_projection'].semi_minor_axis
-    # Calcular a extensão da imagem
-    h = file_ch01.variables['goes_imager_projection'].perspective_point_height
 
     # Lê a data do arquivo
     add_seconds = int(file_ch01.variables['time_bounds'][0])
@@ -203,19 +188,19 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     # band01
     variable = "CMI"
     # reprojetando band 01
-    grid = remap(ch01, variable, extent, resolution, h, a, b, longitude)
+    grid = remap(ch01, variable, extent, resolution)
     # Lê o retorno da função
     data_ch01 = grid.ReadAsArray()
 
     #------------------------------------------------------------------------------------------------------
     # reprojetando band 02
-    grid = remap(ch02, variable, extent, resolution, h, a, b, longitude)
+    grid = remap(ch02, variable, extent, resolution)
     # Lê o retorno da função
     data_ch02 = grid.ReadAsArray()
 
     #------------------------------------------------------------------------------------------------------
     # reprojetando band 03
-    grid = remap(ch03, variable, extent, resolution, h, a, b, longitude)
+    grid = remap(ch03, variable, extent, resolution)
     # Lê o retorno da função 
     data_ch03 = grid.ReadAsArray()
     #------------------------------------------------------------------------------------------------------
@@ -246,50 +231,37 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     description = f' GOES-{satellite} Natural True Color {date_img}'
     institution = "CEPAGRI - UNICAMP"
 
-    #------------------------------------------------------------------------------------------------------  
-    # Formato da imagem
-    dpi = 150
-    fig = plt.figure(figsize=(data_ch01.shape[1]/float(dpi + 5), data_ch01.shape[0]/float(dpi)), dpi=dpi, frameon=True, edgecolor='black', facecolor='black')
+    d_p_i = 150
+    fig = plt.figure(figsize=(2000 / float(d_p_i), 2000 / float(d_p_i)), frameon=True, dpi=d_p_i, edgecolor='black', facecolor='black')
 
-    # Define a projeção
-    proj = ccrs.PlateCarree()
-
-    # Modificar caso a imagem esteja fora da área 
-    ax = plt.axes([0, 0.02, 1, 1], projection=proj)
-    # Não sei o que muda :(
-    ax.set_extent([extent[0], extent[2], extent[1], extent[3]], ccrs.PlateCarree())
+    # Utilizando projecao geoestacionaria no cartopy
+    ax = plt.axes(projection=ccrs.PlateCarree())
 
     # Adicionando o shapefile dos estados brasileiros
-    adicionando_shapefile('br', ax)
+    adicionando_shapefile(v_extent, ax)
 
     # Adicionando  linhas dos litorais
     adicionando_linhas(ax)
 
-    # Pega a extensão da imagem
-    img_extent = [extent[0], extent[2], extent[1], extent[3]]
+    # Formatando a extensao da imagem, modificando ordem de minimo e maximo longitude e latitude
+    img_extent = [extent[0], extent[2], extent[1], extent[3]]  # Min lon, Max lon, Min lat, Max lat
 
-    # Plota a imagem
-    ax.imshow(RGB, origin='upper', extent=img_extent, zorder=1)
+    # Plotando a imagem
+    ax.imshow(RGB, origin='upper', extent=img_extent)
 
-    if v_extent == 'sp':
-        cax1 = fig.add_axes([ax.get_position().x0 + 0.003, ax.get_position().y0 - 0.026, ax.get_position().width - 0.003, 0.0125])
-        cax1.patch.set_color('black') 
-        cax1.text(0, 0.13, description, color='white', size=6)  # Adicionando texto
-        cax1.text(0.85, 0.13, institution, color='yellow', size=6)  # Adicionando texto
-        cax1.xaxis.set_visible(False)  # Removendo rótulos do eixo X
-        cax1.yaxis.set_visible(False)  # Removendo rótulos do eixo Y
-    else:
-        # Adicionando descricao da imagem para br
-        adicionando_descricao_imagem(description, institution, ax, fig)
-        
-    # Adicionando as logos
+    # Adicionando descricao da imagem
+    adicionando_descricao_imagem(description, institution, ax, fig)
+
+    # Adicionando os logos
     adicionando_logos(fig)
-
+    
     # Salvando a imagem de saida
-    plt.savefig(f'{dir_out}{rgb_type}/{rgb_type}_{date_file}_{v_extent}.png', facecolor='black')
+    plt.savefig(f'{dir_out}{rgb_type}/{rgb_type}_{date_file}_{v_extent}.png', bbox_inches='tight', pad_inches=0, dpi=d_p_i)
+    
+    # Fecha a janela para limpar a memoria
+    plt.close()
 
-    # Tempo de processamento True color
-    logging.info('Total processing time:', round((t.time() - start),2), 'seconds.') 
+
 
 
 def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands):
@@ -374,9 +346,9 @@ p_br = True
 p_sp = True
 
 
-new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232641220207_e20232641229515_c20232641229582.nc', 
-              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232641220207_e20232641229515_c20232641229574.nc',
-              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232641220207_e20232641229515_c20232641229581.nc'}
+new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232651250207_e20232651259515_c20232651259586.nc', 
+              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232651250207_e20232651259515_c20232651259572.nc',
+              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232651250207_e20232651259515_c20232651259577.nc'}
 
 # path_ch01 = f'{dir_in}goes/OR_ABI-L2-CMIPF-M6C01_G16_s20232632030204_e20232632039512_c20232632039570.nc'
 # path_ch02 = f'{dir_in}goes/OR_ABI-L2-CMIPF-M6C02_G16_s20232632030204_e20232632039512_c20232632039572.nc'
