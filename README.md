@@ -97,3 +97,18 @@ Os scripts `truecolor.py` e `airmass_rgb.py` realizam o processamento das imagen
 Este código é distribuído sob a licença MIT. Consulte o arquivo LICENSE para obter mais detalhes.
 
 ---
+
+## Example: NOAA GOES-16 truecolor Processing on CEPAGRI
+
+![GOES-16 Satellite](shapefiles/truecolor_br.png)
+---
+![GOES-16 Satellite](shapefiles/truecolor_sp.png)
+---
+![GOES-16 Satellite](shapefiles/airmass_br.png)
+---
+![GOES-16 Satellite](shapefiles/airmass_sp.png)
+---
+
+**Readme.md Author:** [Guilherme de Moura Oliveira]
+**Contact:** [guimoura@unicamp.br]
+**Last Updated:** [22/09/2023]
