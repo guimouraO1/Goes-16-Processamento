@@ -9,8 +9,6 @@ import numpy as np                                           # Computação cien
 import cartopy, cartopy.crs as ccrs                          # Plotar mapas
 import cartopy.io.shapereader as shpreader                   # Importar shapefiles
 import time as t                                             # Acesso e conversão de tempo
-import math                                                  # Importar math
-import os                                                    # Interfaces do sistema operacional
 from remap import remap                                      # Importar a função Remap
 from pyorbital import astronomy
 from pyspectral.rayleigh import Rayleigh                     # Correção atmosférica no espectro visível 
@@ -327,7 +325,6 @@ def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_ba
         # Limpa a lista de processos
         process_sp.clear()
 
-
 dir_main =  f'/mnt/e/truecolor/' 
 dir_in = f'/mnt/e/truecolor/goes/'
 #dir_in = f'/home/guimoura/Documentos/projeto/TrueColor/'
@@ -343,13 +340,13 @@ process_sp = []
 p_br = True
 p_sp = True
 
+# Coloque as badas em goes/band0? e coloque o nome do arquivo aqui
+new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232652020205_e20232652029513_c20232652029585.nc', 
+              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232652020205_e20232652029513_c20232652029573.nc',
+              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232652020205_e20232652029513_c20232652029575.nc'}
 
-new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232651250207_e20232651259515_c20232651259586.nc', 
-              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232651250207_e20232651259515_c20232651259572.nc',
-              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232651250207_e20232651259515_c20232651259577.nc'}
-
-# path_ch01 = f'{dir_in}goes/OR_ABI-L2-CMIPF-M6C01_G16_s20232632030204_e20232632039512_c20232632039570.nc'
-# path_ch02 = f'{dir_in}goes/OR_ABI-L2-CMIPF-M6C02_G16_s20232632030204_e20232632039512_c20232632039572.nc'
-# path_ch03 = f'{dir_in}goes/OR_ABI-L2-CMIPF-M6C03_G16_s20232632030204_e20232632039512_c20232632039562.nc'
+# new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232651250207_e20232651259515_c20232651259586.nc', 
+#               '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232651250207_e20232651259515_c20232651259572.nc',
+#               '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232651250207_e20232651259515_c20232651259577.nc'}
 
 iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands)
