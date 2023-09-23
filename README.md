@@ -90,7 +90,7 @@ As imagens processadas serão salvas no diretório especificado em `dir_out`.
 
 ## Sobre o Código
 
-Os scripts `truecolor.py` e `airmass_rgb.py` realizam o processamento das imagens True Color e Air Mass, respectivamente. Eles incluem funções para reprojetar dados, aplicar correções atmosféricas e criar imagens finais.
+Os scripts `truecolor.py` e `airmass_rgb.py` realizam o processamento das imagens True Color e Air Mass. Eles incluem funções para reprojetar dados, aplicar correções atmosféricas e criar imagens finais.
 
 ## Licença
 
