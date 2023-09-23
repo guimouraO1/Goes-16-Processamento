@@ -34,14 +34,12 @@ def process_airmass(rgb_type, v_extent, path_ch08=None, path_ch10=None, path_ch1
 
     # Read the file using the NetCDF library
     file_ch08 = Dataset(path_ch08)
-    file_ch10 = Dataset(path_ch10)
-    file_ch12 = Dataset(path_ch12)
-    file_ch13 = Dataset(path_ch13)
 
     # Lê o identificador do satélite
     satellite = getattr(file_ch08, 'platform_ID')
     variable = "CMI"
-
+    
+    # Area de interesse para recorte
     extent, resolution = area_para_recorte(v_extent)
 
     # Read the resolution
@@ -126,7 +124,7 @@ def process_airmass(rgb_type, v_extent, path_ch08=None, path_ch10=None, path_ch1
     description = f' GOES-{satellite} Air Mass {date_img}'
     institution = "CEPAGRI - UNICAMP"
 
-    # Tamanho da imagem a ser plotada
+    # Definindo tamanho da imagem de saida
     d_p_i = 150
     fig = plt.figure(figsize=(2000 / float(d_p_i), 2000 / float(d_p_i)), frameon=True, dpi=d_p_i, edgecolor='black', facecolor='black')
 
@@ -163,7 +161,7 @@ def process_airmass(rgb_type, v_extent, path_ch08=None, path_ch10=None, path_ch1
 
 def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands):
     # Checagem se e possivel gerar imagem Air Mass
-    if bands['17']:
+    if bands['22']:
         # Se a variavel de controle de processamento do brasil for True, realiza o processamento
         if p_br:
             logging.info("")
@@ -243,7 +241,7 @@ dir_colortables = f'{dir_main}colortables/'
 dir_logos = f'{dir_main}logos/'
 
 bands = {}
-bands['17'] = True
+bands['22'] = True
 process_br = []
 process_sp = []
 p_br = True

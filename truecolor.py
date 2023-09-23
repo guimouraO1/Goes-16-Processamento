@@ -183,7 +183,7 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     date_file = date.strftime('%Y%m%d_%H%M%S')
     date_img = date.strftime('%d-%b-%Y %H:%M UTC')
 
-    
+    # Area de interesse para recorte
     extent, resolution = area_para_recorte(v_extent)
     variable = "CMI"
     
@@ -235,6 +235,7 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     description = f' GOES-{satellite} Natural True Color {date_img}'
     institution = "CEPAGRI - UNICAMP"
 
+    # Definindo tamanho da imagem de saida
     d_p_i = 150
     fig = plt.figure(figsize=(2000 / float(d_p_i), 2000 / float(d_p_i)), frameon=True, dpi=d_p_i, edgecolor='black', facecolor='black')
 
