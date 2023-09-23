@@ -17,6 +17,16 @@ from pyorbital.orbital import get_observer_look
 from multiprocessing import Process  # Utilitario para multiprocessamento
 import logging
 
+###########################################################################
+#              Script de Processamento para True Color Goes-16            #
+###########################################################################
+#  Metodo: De 10 em 10 minutos                                            #
+#  Descricao: Processa imagens netCDF4 para criar imagem True Color       #
+#  Autor: Guilherme de Moura Oliveira  <guimoura@unicamp.br>              #
+#  Data: 20/09/2023                                                       #
+#  Atualizacao: 22/09/2023                                                #
+###########################################################################
+
 
 def adicionando_linhas(ax):
     # Adicionando linhas da costa
@@ -173,30 +183,32 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     date_file = date.strftime('%Y%m%d_%H%M%S')
     date_img = date.strftime('%d-%b-%Y %H:%M UTC')
 
+    
     extent, resolution = area_para_recorte(v_extent)
-
+    variable = "CMI"
+    
     #------------------------------------------------------------------------------------------------------#
     #-------------------------------------------Reprojetando----------------------------------------------#
     #------------------------------------------------------------------------------------------------------#
-    # band01
-    variable = "CMI"
     # reprojetando band 01
     grid = remap(ch01, variable, extent, resolution)
     # Lê o retorno da função
     data_ch01 = grid.ReadAsArray()
-
+    #------------------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------------------
     # reprojetando band 02
     grid = remap(ch02, variable, extent, resolution)
     # Lê o retorno da função
     data_ch02 = grid.ReadAsArray()
-
+    #------------------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------------------
     # reprojetando band 03
     grid = remap(ch03, variable, extent, resolution)
     # Lê o retorno da função 
     data_ch03 = grid.ReadAsArray()
     #------------------------------------------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------
+
 
     #------------------------------------------------------------------------------------------------------
     # Calculando correção zenith

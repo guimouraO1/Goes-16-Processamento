@@ -8,10 +8,23 @@ import cartopy.io.shapereader as shpreader   # Import shapefiles
 import math                                  # Import math
 from datetime import datetime, timedelta     # Library to convert julian day to dd-mm-yyyy
 from truecolor import area_para_recorte
+from truecolor import adicionando_shapefile
+from truecolor import adicionando_linhas
+from truecolor import adicionando_descricao_imagem
+from truecolor import adicionando_logos
 from remap import remap
 import time as time    
 import logging
 
+###########################################################################
+#              Script de Processamento para True Color Goes-16            #
+###########################################################################
+#  Metodo: De 10 em 10 minutos                                            #
+#  Descricao: Processa imagens netCDF4 para criar imagem True Color       #
+#  Autor: Guilherme de Moura Oliveira  <guimoura@unicamp.br>              #
+#  Data: 22/09/2023                                                       #
+#  Atualizacao: 22/09/2023                                                #
+###########################################################################
 
 print('Script started.')
 start = time.time()  
@@ -31,6 +44,10 @@ file_ch10 = Dataset(path_ch10)
 file_ch12 = Dataset(path_ch12)
 file_ch13 = Dataset(path_ch13)
 
+
+# Lê o identificador do satélite
+satellite = getattr(file_ch08, 'platform_ID')
+
 variable = "CMI"
 v_extent = 'br'
 extent, resolution = area_para_recorte(v_extent)
@@ -39,29 +56,21 @@ extent, resolution = area_para_recorte(v_extent)
 band_resolution_km = getattr(file_ch08, 'spatial_resolution')
 band_resolution_km = float(band_resolution_km[:band_resolution_km.find("km")])
 
-# Division factor to reduce image size
-f = math.ceil(float(resolution / band_resolution_km))
-
-# Read the central longitude
-longitude = file_ch08.variables['goes_imager_projection'].longitude_of_projection_origin
-# Read the semi major axis
-a = file_ch08.variables['goes_imager_projection'].semi_major_axis
-# Read the semi minor axis
-b = file_ch08.variables['goes_imager_projection'].semi_minor_axis
-
 # Getting the file time and date
 add_seconds = int(file_ch08.variables['time_bounds'][0])
 date = datetime(2000,1,1,12) + timedelta(seconds=add_seconds)
 date_formated = date.strftime('%Y-%m-%d %H:%M UTC')
-date_file = date.strftime('%Y%m%d%H%M')
+date_file = date.strftime('%Y%m%d_%H%M%S')
+date_img = date.strftime('%d-%b-%Y %H:%M UTC')
 year = date.strftime('%Y')
 month = date.strftime('%m')
 day = date.strftime('%d')
 hour = date.strftime('%H')
 minutes = date.strftime('%M')
 
-#------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------#
+#-------------------------------------------Reprojetando----------------------------------------------#
+#------------------------------------------------------------------------------------------------------#
 # Call the reprojection funcion
 grid = remap(path_ch08, variable, extent, resolution)
 # Read the data returned by the function 
@@ -124,36 +133,44 @@ B = ((B - Bmin) / (Bmax - Bmin)) ** (1/gamma)
 RGB = np.stack([R, G, B], axis=2)
 #------------------------------------------------------------------------------------------------------
 #------------------------------------------------------------------------------------------------------
-# Plot configuration
-plot_config = {
-"resolution": band_resolution_km, 
-"dpi": 150,  
-"title_text": "GOES-16 AIRMASS RGB", "title_size": int(data_ch08.shape[1] * 0.005), "title_x_offset": int(data_ch08.shape[1] * 0.01), "title_y_offset": data_ch08.shape[0] - int(data_ch08.shape[0] * 0.016), 
-"file_name_id_1": "G16",  "file_name_id_2": "ARMRGB" 
-}
-#------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------
+
+# Formatando a descricao a ser plotada na imagem
+description = f' GOES-{satellite} Air Mass {date_img}'
+institution = "CEPAGRI - UNICAMP"
 
 d_p_i = 150
 fig = plt.figure(figsize=(2000 / float(d_p_i), 2000 / float(d_p_i)), frameon=True, dpi=d_p_i, edgecolor='black', facecolor='black')
 
-# Define the projection
-proj = ccrs.PlateCarree()
+# Utilizando projecao geoestacionaria no cartopy
+ax = plt.axes(projection=ccrs.PlateCarree())
 
-# Use the PlateCarree projection in cartopy
-ax = plt.axes([0, 0, 1, 1], projection=proj)
+# Adicionando o shapefile dos estados brasileiros
+adicionando_shapefile(v_extent, ax)
+
+# Adicionando  linhas dos litorais
+adicionando_linhas(ax)
 
 # Define the image extent
 img_extent = [extent[0], extent[2], extent[1], extent[3]]
 
 # Plot the image
-img = ax.imshow(RGB, origin='upper', extent=img_extent, zorder=3)
-  
-# Add a title
-plt.annotate(plot_config["title_text"] + " " + date_formated , xy=(plot_config["title_x_offset"], plot_config["title_y_offset"]), xycoords='figure pixels', fontsize=plot_config["title_size"], fontweight='bold', color='white', bbox=dict(boxstyle="round",fc=(0.0, 0.0, 0.0), ec=(1., 1., 1.)), zorder=7)
+img = ax.imshow(RGB, origin='upper', extent=img_extent)
 
-# Save the image
-plt.savefig(plot_config["file_name_id_1"] + "_" + plot_config["file_name_id_2"] + "_" + date_file + '.png', bbox_inches='tight', pad_inches=0, facecolor='black')
+# Adicionando descricao da imagem
+adicionando_descricao_imagem(description, institution, ax, fig)
+
+# Adicionando os logos
+adicionando_logos(fig)
+
+dir_main =  f'/mnt/e/truecolor/' 
+dir_out = f'{dir_main}output/'
+rgb_type = 'airmass'
+# Salvando a imagem de saida
+plt.savefig(f'{dir_out}{rgb_type}/{rgb_type}_{date_file}_{v_extent}.png', bbox_inches='tight', pad_inches=0, dpi=d_p_i)
+
+# Fecha a janela para limpar a memoria
+plt.close()
 
 # Tempo de processamento True color
 logging.info('Total processing time Airmass:', round((time.time() - start),2), 'seconds.') 
+
