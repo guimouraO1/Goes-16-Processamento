@@ -15,7 +15,7 @@ import time as time
 import logging
 from multiprocessing import Process  # Utilitario para multiprocessamento
 from matplotlib.colors import LinearSegmentedColormap, to_rgba
-import matplotlib.table
+
 ###########################################################################
 #              Script de Processamento para Air Mass Goes-16              #
 ###########################################################################
