@@ -335,8 +335,8 @@ def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_ba
         # Limpa a lista de processos
         process_sp.clear()
 
-dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
-#dir_main =  f'/mnt/e/truecolor/' 
+#dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
+dir_main =  f'/mnt/e/truecolor/' 
 dir_in = f'{dir_main}goes/'
 dir_shapefiles = f'{dir_main}shapefiles/'
 dir_colortables = f'{dir_main}colortables/'
@@ -351,9 +351,9 @@ p_br = True
 p_sp = True
 
 # Coloque as badas em goes/band0? e coloque o nome do arquivo aqui
-new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232671320208_e20232671329516_c20232671329582.nc', 
-              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232671320208_e20232671329516_c20232671329570.nc',
-              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232671320208_e20232671329516_c20232671329572.nc'}
+new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232651250207_e20232651259515_c20232651259586.nc', 
+              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232651250207_e20232651259515_c20232651259572.nc',
+              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232651250207_e20232651259515_c20232651259577.nc'}
 
 
 iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands)
