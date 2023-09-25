@@ -14,6 +14,7 @@ from remap import remap
 import time as time    
 import logging
 from multiprocessing import Process  # Utilitario para multiprocessamento
+from matplotlib.colors import LinearSegmentedColormap, to_rgba
 
 ###########################################################################
 #              Script de Processamento para Air Mass Goes-16              #
@@ -89,7 +90,7 @@ def process_airmass(rgb_type, v_extent, path_ch08=None, path_ch10=None, path_ch1
     # Minimuns and Maximuns
     Rmin = -26.2
     Rmax = 0.6
-
+    
     Gmin = -43.2
     Gmax = 6.7
 
@@ -133,14 +134,41 @@ def process_airmass(rgb_type, v_extent, path_ch08=None, path_ch10=None, path_ch1
     adicionando_shapefile(v_extent, ax)
 
     # Adicionando  linhas dos litorais
-    adicionando_linhas(ax)
+    adicionando_linhas(ax)    
+    
+    # Defina as cores da colorbar
+    colors = ['#b62007','#6f008b', '#0a0a8e', '#538234', '#335a25', '#704c02', '#b57350', '#ffffff']
 
-    # Define the image extent
+    # Crie uma lista de posições normalizadas para as cores
+    color_positions = np.linspace(0, 1, len(colors))
+
+    # Crie um dicionário de cores segmentadas
+    cmap_dict = {'red': [], 'green': [], 'blue': [], 'alpha': []}
+
+    for color in colors:
+        rgba = to_rgba(color)  # Use a função to_rgba para converter a cor
+        cmap_dict['red'].append((color_positions[colors.index(color)], rgba[0], rgba[0]))
+        cmap_dict['green'].append((color_positions[colors.index(color)], rgba[1], rgba[1]))
+        cmap_dict['blue'].append((color_positions[colors.index(color)], rgba[2], rgba[2]))
+        cmap_dict['alpha'].append((color_positions[colors.index(color)], rgba[3], rgba[3]))
+
+    # Crie a paleta de cores personalizada
+    custom_cmap = LinearSegmentedColormap('CustomCmap', cmap_dict)
+
     img_extent = [extent[0], extent[2], extent[1], extent[3]]
-
+    
     # Plot the image
-    img = ax.imshow(RGB, origin='upper', extent=img_extent)
-
+    img = ax.imshow(RGB, origin='upper', cmap=custom_cmap, extent=img_extent)
+    
+    # Adicionando barra da paleta de cores de acordo com o canal
+    cax0 = fig.add_axes([ax.get_position().x0, ax.get_position().y0 - 0.01325, ax.get_position().width, 0.0125])
+    cb = plt.colorbar(img, orientation="horizontal", cax=cax0, ticks=[0.2, 0.4, 0.6, 0.8])
+    cb.ax.set_xticklabels(['0.2', '0.4', '0.6', '0.8'])
+    cb.ax.tick_params(axis='x', colors='black', labelsize=8)  # Alterando cor e tamanho dos rotulos da barra da paleta de cores
+    cb.outline.set_visible(False)  # Removendo contorno da barra da paleta de cores
+    cb.ax.tick_params(width=0)  # Removendo ticks da barra da paleta de cores
+    cb.ax.xaxis.set_tick_params(pad=-13)  # Colocando os rotulos dentro da barra da paleta de cores
+    
     # Adicionando descricao da imagem
     adicionando_descricao_imagem(description, institution, ax, fig)
 
@@ -230,8 +258,8 @@ def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_ba
         # Limpa a lista de processos
         process_sp.clear()
 
-
-dir_main =  f'/mnt/e/truecolor/' 
+dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
+#dir_main =  f'/mnt/e/truecolor/' 
 dir_out = f'{dir_main}output/'
 dir_in = f'{dir_main}goes/'
 dir_shapefiles = f'{dir_main}shapefiles/'
@@ -246,10 +274,10 @@ p_br = True
 p_sp = True
 
 # Coloque as badas em goes/band0? e coloque o nome do arquivo aqui
-new_bands = { '08': f'OR_ABI-L2-CMIPF-M6C08_G16_s20232641020207_e20232641029515_c20232641029592.nc', 
-              '10': f'OR_ABI-L2-CMIPF-M6C10_G16_s20232641020207_e20232641029526_c20232641029583.nc',
-              '12': f'OR_ABI-L2-CMIPF-M6C12_G16_s20232641020207_e20232641029521_c20232641029598.nc',
-              '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20232641020207_e20232641029526_c20232641029588.nc'
+new_bands = { '08': f'OR_ABI-L2-CMIPF-M6C08_G16_s20232671320208_e20232671329516_c20232671329589.nc', 
+              '10': f'OR_ABI-L2-CMIPF-M6C10_G16_s20232671320208_e20232671329528_c20232671329589.nc',
+              '12': f'OR_ABI-L2-CMIPF-M6C12_G16_s20232671320208_e20232671329522_c20232671329592.nc',
+              '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20232671320208_e20232671329527_c20232671329592.nc'
               }
 
 iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands)
