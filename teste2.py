@@ -1,9 +1,3 @@
-# Required modules
-#--------------------------------
-#to run in a pure text terminal:
-#import matplotlib
-#matplotlib.use('Agg')
-#--------------------------------
 from netCDF4 import Dataset                                  # Read / Write NetCDF4 files
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes # Add a child inset axes to this existing axes.
 from datetime import datetime, timedelta                     # Library to convert julian day to dd-mm-yyyy                            # Import the CPT convert function
@@ -14,104 +8,29 @@ import cartopy, cartopy.crs as ccrs                          # Plot maps
 import cartopy.io.shapereader as shpreader                   # Import shapefiles
 import time as t                                             # Time access and conversion
 import math                                                  # Import math                                                # Unix style pathname pattern expansion
-import sys                                                   # Import the "system specific parameters and functions" module
-import os 												     # Miscellaneous operating system interfaces
 from os.path import dirname, abspath                         # Return a normalized absolutized version of the pathname path                                            # To check which OS is being used
 from pyorbital import astronomy                      # Import GDAL                            # Update the HTML animation 
-from remap import remap                                      # Import the Remap function 
+from remap import remap , loadCPT                                     # Import the Remap function 
 import warnings
 warnings.filterwarnings("ignore")
 
 
-import colorsys							 # Conversions between color systems
-
-def loadCPT(path):
-
-    try:
-        f = open(path)
-    except:
-        print ("File ", path, "not found")
-        return None
-
-    lines = f.readlines()
-
-    f.close()
-
-    x = np.array([])
-    r = np.array([])
-    g = np.array([])
-    b = np.array([])
-
-    colorModel = 'RGB'
-
-    for l in lines:
-        ls = l.split()
-        if l[0] == '#':
-            if ls[-1] == 'HSV':
-                colorModel = 'HSV'
-                continue
-            else:
-                continue
-        if ls[0] == 'B' or ls[0] == 'F' or ls[0] == 'N':
-            pass
-        else:
-            x=np.append(x,float(ls[0]))
-            r=np.append(r,float(ls[1]))
-            g=np.append(g,float(ls[2]))
-            b=np.append(b,float(ls[3]))
-            xtemp = float(ls[4])
-            rtemp = float(ls[5])
-            gtemp = float(ls[6])
-            btemp = float(ls[7])
-
-        x=np.append(x,xtemp)
-        r=np.append(r,rtemp)
-        g=np.append(g,gtemp)
-        b=np.append(b,btemp)
-
-    if colorModel == 'HSV':
-        for i in range(r.shape[0]):
-            rr, gg, bb = colorsys.hsv_to_rgb(r[i]/360.,g[i],b[i])
-        r[i] = rr ; g[i] = gg ; b[i] = bb
-
-    if colorModel == 'RGB':
-        r = r/255.0
-        g = g/255.0
-        b = b/255.0
-
-    xNorm = (x - x[0])/(x[-1] - x[0])
-
-    red   = []
-    blue  = []
-    green = []
-
-    for i in range(len(x)):
-        red.append([xNorm[i],r[i],r[i]])
-        green.append([xNorm[i],g[i],g[i]])
-        blue.append([xNorm[i],b[i],b[i]])
-
-    colorDict = {'red': red, 'green': green, 'blue': blue}
-    #print(red)
-
-    return colorDict
+dir_main =  f'/mnt/e/TrueColor/' 
 
 # Start the time counter
 print('Script started.')
 start = t.time()  
 
 # Band 02 path
-path_ch02 = '/home/guimoura/Documentos/Goes-16-Processamento/goes/band02/OR_ABI-L2-CMIPF-M6C02_G16_s20232701130209_e20232701139517_c20232701139567.nc'
-path_ch13 = '/home/guimoura/Documentos/Goes-16-Processamento/goes/band13/OR_ABI-L2-CMIPF-M6C13_G16_s20232701130209_e20232701139529_c20232701139586.nc'
+path_ch02 = f'{dir_main}goes/band02/OR_ABI-L2-CMIPF-M6C02_G16_s20232652020205_e20232652029513_c20232652029573.nc'
+path_ch13 = f'{dir_main}goes/band13/OR_ABI-L2-CMIPF-M6C13_G16_s20232641020207_e20232641029526_c20232641029588.nc'
 
 # Read the image
 file_ch02 = Dataset(path_ch02)
-
 # Read the satellite 
 satellite = getattr(file_ch02, 'platform_ID')
-
 # Desired resolution
 resolution = 4
-
 # Read the central longitude
 longitude = file_ch02.variables['goes_imager_projection'].longitude_of_projection_origin
 
@@ -129,13 +48,11 @@ minutes = date.strftime('%M')
 
 # Choose the visualization extent (min lon, min lat, max lon, max lat)
 extent = [-90.0, -40.0, -20.0, 10.0]
-
 # Variable to remap
 variable = "CMI"
 
 # Call the reprojection funcion
 grid = remap(path_ch02, variable, extent, resolution)
-     
 # Read the data returned by the function 
 data_ch02 = grid.ReadAsArray()
 
@@ -211,23 +128,16 @@ data_ch13 = data_ch13.astype(int)
  
 import matplotlib.image as mpimg
 # Open the False Color Look Up Table
-img = mpimg.imread('/home/guimoura/Documentos/Goes-16-Processamento/colortables/wx-star.com_GOES-R_ABI_False-Color-LUT_sat20.png')
+img = mpimg.imread(f'{dir_main}colortables/wx-star.com_GOES-R_ABI_False-Color-LUT_sat20.png')
 # Flip the array (for some reason, is necessary to flip the LUT horizontally)
 img = np.fliplr(img)
 # Apply the look up table based on the Band 02 reflectances and Band 13 Brightness Temperatures
 data = img[data_ch02,data_ch13,0:3]
 
-# Eliminate values outside the globe
-#mask = (data == [data[0,0]])
-#data[mask] = np.nan
-
 
 #print(data_ch02.shape[0])
 lons = np.arange(extent[0], extent[2], ((extent[2] - extent[0]) / data_ch02.shape[1]))
-print(lons)
 lats = np.arange(extent[1], extent[3], ((extent[3] - extent[1]) / data_ch02.shape[0]))
-print(lats)
-
 lons, lats = np.meshgrid(lons, lats)
 lats = np.flipud(lats)
 
@@ -271,21 +181,16 @@ plot_config = {
 "title_text": "GOES-" + satellite[1:3] + " FALSE COLOR ", "title_size": int(data_ch02.shape[1] * 0.005), "title_x_offset": int(data_ch02.shape[1] * 0.01), "title_y_offset": data_ch02.shape[0] - int(data_ch02.shape[0] * 0.016), 
 "file_name_id_1": satellite,  "file_name_id_2": 'product'
 }
+# Definindo tamanho da imagem de saida
+d_p_i = 150
+fig = plt.figure(figsize=(2000 / float(d_p_i), 2000 / float(d_p_i)), frameon=True, dpi=d_p_i, edgecolor='black', facecolor='black')
 
-# Choose the plot size (width x height, in inches)
-fig = plt.figure(figsize=(data_ch02.shape[1]/float(plot_config["dpi"]), data_ch02.shape[0]/float(plot_config["dpi"])), dpi=plot_config["dpi"])
-  
-# Define the projection
-proj = ccrs.PlateCarree()
-
-# Use the PlateCarree projection in cartopy
-ax = plt.axes([0, 0, 1, 1], projection=proj)
-ax.set_extent([extent[0], extent[2], extent[1], extent[3]], ccrs.PlateCarree())
+# Utilizando projecao geoestacionaria no cartopy
+ax = plt.axes(projection=ccrs.PlateCarree())
 
 # Define the image extent
 img_extent = [extent[0], extent[2], extent[1], extent[3]]
 
-#print("First layer...")
 # Apply range limits for clean IR channel
 data1 = data_ch13_original
 data1 = np.maximum(data1, 90)
@@ -296,16 +201,15 @@ data1 = (data1-90)/(313-90)
 data1 = 1 - data1
 img2 = ax.imshow(data1, cmap='gray', vmin=0.1, vmax=0.25, alpha = 0.6, origin='upper', extent=img_extent, zorder=2)
 
-#print("Second layer...")
 # SECOND LAYER
 data2 = data1
 data2[data2 < 0.20] = np.nan
 img3 = ax.imshow(data2, cmap='gray', vmin=0.15, vmax=0.30, alpha = 1.0, origin='upper', extent=img_extent, zorder=3)
 
 # Converts a CPT file to be used in Python
-cpt = loadCPT('/home/guimoura/Documentos/Goes-16-Processamento/colortables/IR4AVHRR6.cpt')   
+cpt = loadCPT(f'{dir_main}colortables/IR4AVHRR6.cpt')   
 cmap = LinearSegmentedColormap('cpt', cpt) 
-#print("Third layer...")
+
 # THIRD LAYER
 data3 = data_ch13_original
 data3 = data_ch13_original - 273.15
@@ -316,8 +220,7 @@ img4 = ax.imshow(data3, cmap=cmap, vmin=-103, vmax=84, alpha=1.0, origin='upper'
 ax.imshow(data, origin='upper', extent=img_extent, zorder=5)
 
 # Save the image
-plt.savefig('/home/guimoura/Documentos/Goes-16-Processamento/' + plot_config["file_name_id_1"] + "_" + plot_config["file_name_id_2"] + "_" + date_file + '.png', facecolor='black')#, bbox_inches='tight', pad_inches=0, facecolor='black')
-
+plt.savefig(f'{dir_main}' + plot_config["file_name_id_1"] + "_" + plot_config["file_name_id_2"] + "_" + date_file + '.png', facecolor='black')#, bbox_inches='tight', pad_inches=0, facecolor='black')
 
 
 print('Total processing time:', round((t.time() - start),2), 'seconds.') 
