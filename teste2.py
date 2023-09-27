@@ -1,25 +1,3 @@
-#######################################################################################################
-# LICENSE
-# Copyright (C) 2021 - INPE - NATIONAL INSTITUTE FOR SPACE RESEARCH - BRAZIL
-# This program is free software: you can redistribute it and/or modify it under the terms of the GNU 
-# General Public License as published by the Free Software Foundation, either version 3 of the License, 
-# or (at your option) any later version.
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without 
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
-# Public License for more details.
-# You should have received a copy of the GNU General Public License along with this program. 
-# If not, see http://www.gnu.org/licenses/.
-#######################################################################################################
-__author__ = "Diego Souza"
-__copyright__ = "Copyright (C) 2021 - INPE - NATIONAL INSTITUTE FOR SPACE RESEARCH - BRAZIL"
-__credits__ = ["Diego Souza"]
-__license__ = "GPL"
-__version__ = "2.3.0"
-__maintainer__ = "Diego Souza"
-__email__ = "diego.souza@inpe.br"
-__status__ = "Production"
-#------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------
 # Required modules
 #--------------------------------
 #to run in a pure text terminal:
@@ -123,45 +101,20 @@ start = t.time()
 
 # Band 02 path
 path_ch02 = '/home/guimoura/Documentos/Goes-16-Processamento/goes/band02/OR_ABI-L2-CMIPF-M6C02_G16_s20232701130209_e20232701139517_c20232701139567.nc'
-
 path_ch13 = '/home/guimoura/Documentos/Goes-16-Processamento/goes/band13/OR_ABI-L2-CMIPF-M6C13_G16_s20232701130209_e20232701139529_c20232701139586.nc'
 
-#---------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------
 # Read the image
 file_ch02 = Dataset(path_ch02)
 
 # Read the satellite 
 satellite = getattr(file_ch02, 'platform_ID')
 
-# Read the band number
-band = str(file_ch02.variables['band_id'][0]).zfill(2)
-
 # Desired resolution
 resolution = 4
-
-# Read the resolution
-band_resolution_km = getattr(file_ch02, 'spatial_resolution')
-band_resolution_km = float(band_resolution_km[:band_resolution_km.find("km")])
-
-# Division factor to reduce image size
-f = math.ceil(float(resolution / band_resolution_km))
 
 # Read the central longitude
 longitude = file_ch02.variables['goes_imager_projection'].longitude_of_projection_origin
 
-# Read the semi major axis
-a = file_ch02.variables['goes_imager_projection'].semi_major_axis
-
-# Read the semi minor axis
-b = file_ch02.variables['goes_imager_projection'].semi_minor_axis
-
-# Calculate the image extent 
-h = file_ch02.variables['goes_imager_projection'].perspective_point_height
-x1 = file_ch02.variables['x_image_bounds'][0] * h 
-x2 = file_ch02.variables['x_image_bounds'][1] * h 
-y1 = file_ch02.variables['y_image_bounds'][1] * h 
-y2 = file_ch02.variables['y_image_bounds'][0] * h 
 
 # Getting the file time and date
 add_seconds = int(file_ch02.variables['time_bounds'][0])
@@ -268,31 +221,7 @@ data = img[data_ch02,data_ch13,0:3]
 #mask = (data == [data[0,0]])
 #data[mask] = np.nan
 
-# Product Name
-product = "FCOLOR_SEC"
-#---------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------
 
-#print("Converting G16 coordinates to lons and lats...")
-'''
-# Satellite height
-sat_h = file_ch13.variables['goes_imager_projection'].perspective_point_height
-# Satellite longitude
-sat_lon = file_ch13.variables['goes_imager_projection'].longitude_of_projection_origin
-# Satellite sweep
-sat_sweep = file_ch13.variables['goes_imager_projection'].sweep_angle_axis
-# The projection x and y coordinates equals
-# the scanning angle (in radians) multiplied by the satellite height (http://proj4.org/projections/geos.html)
-X = file_ch13.variables['x'][:][::f] * sat_h
-Y = file_ch13.variables['y'][:][::f] * sat_h
-# map object with pyproj
-p = Proj(proj='geos', h=sat_h, lon_0=sat_lon, sweep=sat_sweep, a=6378137.0)
-# Convert map points to latitude and longitude with the magic provided by Pyproj
-XX, YY = np.meshgrid(X, Y)
-lons, lats = p(XX, YY, inverse=True)
-#print(lons.shape)
-#print(lats.shape)
-'''
 #print(data_ch02.shape[0])
 lons = np.arange(extent[0], extent[2], ((extent[2] - extent[0]) / data_ch02.shape[1]))
 print(lons)
@@ -302,23 +231,12 @@ print(lats)
 lons, lats = np.meshgrid(lons, lats)
 lats = np.flipud(lats)
 
-print(lons.shape)
-print(lats.shape)
-#if (satellite == 'G17'):
-#    lats == np.flipud(lats)
-    
-#print(lons.shape)
-#print(lats.shape)
-
 #print("Calculating the sun zenith angle...")
-
 utc_time = datetime(int(year), int(month), int(day), int(hour), int(minutes))
 sun_zenith = np.zeros((data_ch02.shape[0], data_ch02.shape[1]))
 sun_zenith = astronomy.sun_zenith_angle(utc_time, lons[:,:][::1,::1], lats[:,:][::1,::1])
-#print(np.shape(sun_zenith))
 
-#print("Putting transparency in the areas without sunlight")
-#print(data.shape)
+
 data[sun_zenith > 85] = [0.0,0.0,0.0]
 mask = (data == [0.0,0.0,0.0]).all(axis=2)
 #apply the mask to overwrite the pixels
@@ -335,42 +253,13 @@ data = np.dstack((data, alphas))
 # Choose the visualization extent (min lon, min lat, max lon, max lat)
 extent = [-90.0, -40.0, -20.0, 10.0]
 
-
-
-if (satellite == 'G16'):
-    extent_night = [-156.29, -81.32, 6.29, 81.32]
-elif (satellite == 'G17'):
-    extent_night = [-216.29, -81.32, -54.29, 81.32]
-
+extent_night = [-156.29, -81.32, 6.29, 81.32]
 
 extent_night[0] = extent[0] - 10
 extent_night[1] = extent[1] - 10
 extent_night[2] = extent[2] + 10
 extent_night[3] = extent[3] + 10
 
-'''    
-if(extent[0] > 0):
-    extent_night[0] = extent[0] + 10
-else:
-    extent_night[0] = extent[0] - 10
-if(extent[1] > 0):
-    extent_night[1] = extent[1] + 10
-else:
-    extent_night[1] = extent[1] - 10
-if(extent[2] > 0):
-    extent_night[2] = extent[2] + 10
-else:
-    extent_night[2] = extent[2] - 10
-if(extent[3] > 0):
-    extent_night[3] = extent[3] + 10
-else:
-    extent_night[3] = extent[3] - 10
-'''    
-
-#print(np.shape(color_tuples))
-#---------------------------------------------------------------------------------------------
-#---------------------------------------------------------------------------------------------
-  
 # Plot configuration
 plot_config = {
 "resolution": band_resolution_km, 
@@ -380,7 +269,7 @@ plot_config = {
 "continents_color": 'gold', "continents_width": data_ch02.shape[0] * 0.00025,
 "grid_color": 'white', "grid_width": data_ch02.shape[0] * 0.00025, "grid_interval": 10.0,
 "title_text": "GOES-" + satellite[1:3] + " FALSE COLOR ", "title_size": int(data_ch02.shape[1] * 0.005), "title_x_offset": int(data_ch02.shape[1] * 0.01), "title_y_offset": data_ch02.shape[0] - int(data_ch02.shape[0] * 0.016), 
-"file_name_id_1": satellite,  "file_name_id_2": product
+"file_name_id_1": satellite,  "file_name_id_2": 'product'
 }
 
 # Choose the plot size (width x height, in inches)
@@ -395,9 +284,6 @@ ax.set_extent([extent[0], extent[2], extent[1], extent[3]], ccrs.PlateCarree())
 
 # Define the image extent
 img_extent = [extent[0], extent[2], extent[1], extent[3]]
-
-# img = ax.imshow(sun_zenith, cmap='jet', vmin=0, vmax=90, alpha = 1.0, origin='upper', extent=img_extent, zorder=2)
-# plt.show()
 
 #print("First layer...")
 # Apply range limits for clean IR channel
@@ -427,15 +313,7 @@ data3[np.logical_or(data3 < -80, data3 > -28)] = np.nan
 img4 = ax.imshow(data3, cmap=cmap, vmin=-103, vmax=84, alpha=1.0, origin='upper', extent=img_extent, zorder=4)
 
 # Plot the image
-img5 = ax.imshow(data, origin='upper', extent=img_extent, zorder=5)
-#plt.show() 
-
-  
-# Add a title
-plt.annotate(plot_config["title_text"] + " " + date_formated , xy=(plot_config["title_x_offset"], plot_config["title_y_offset"]), xycoords='figure pixels', fontsize=plot_config["title_size"], fontweight='bold', color='white', bbox=dict(boxstyle="round",fc=(0.0, 0.0, 0.0), ec=(1., 1., 1.)), zorder=10)
-
-#------------------------------------------------------------------------------------------------------
-#------------------------------------------------------------------------------------------------------
+ax.imshow(data, origin='upper', extent=img_extent, zorder=5)
 
 # Save the image
 plt.savefig('/home/guimoura/Documentos/Goes-16-Processamento/' + plot_config["file_name_id_1"] + "_" + plot_config["file_name_id_2"] + "_" + date_file + '.png', facecolor='black')#, bbox_inches='tight', pad_inches=0, facecolor='black')
