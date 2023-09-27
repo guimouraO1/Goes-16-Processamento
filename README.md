@@ -113,5 +113,6 @@ Este código é distribuído sob a licença MIT. Consulte o arquivo LICENSE para
 **Author:** [Guilherme de Moura Oliveira]
 **Contact:** [guimoura@unicamp.br]
 **Last Updated:** [22/09/2023]
+
 **Parte deste código foi adaptada do trabalho do** Diego Souza (github.com/diegormsouza)
 **Link para o código original:** [https://github.com/diegormsouza/GOES-16-RGB-s/blob/main/g16_rgb_true_color_cartopy.py]
