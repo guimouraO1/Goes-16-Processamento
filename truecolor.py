@@ -140,7 +140,7 @@ def applying_rayleigh_correction(file_ch01, utc_time, lons, lats, sun_zenith, da
 
     refl_cor_band_c02 = corrector.get_reflectance(sun_zenith, satz, ssadiff, 'C02', redband=red)
     data_ch02 = data_ch02 - (refl_cor_band_c02 / 100)
-
+    
     return data_ch01, data_ch02 
 
 
@@ -226,9 +226,25 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     R = apply_cira_stretch(R)
     G = apply_cira_stretch(G)
     B = apply_cira_stretch(B)
-
+    
     # Create the RGB
     RGB = np.stack([R, G, B], axis=2)		
+    
+    # If zenith angle is greater than 85°, the composite pixel is zero
+    RGB[sun_zenith > 85] = 0
+    # Create the mask for the regions with zero
+    mask = (RGB == [0.0,0.0,0.0]).all(axis=2)
+    # Apply the mask to overwrite the pixels
+    RGB[mask] = [0,0,0]
+    # Create the fading transparency between the regions with the
+    # sun zenith angle of 75° and 85°
+    alphas = sun_zenith / 100
+    min_sun_angle = 0.75
+    max_sun_angle = 0.85
+    # Normalize the transparency mask
+    alphas = ((alphas - max_sun_angle) / (min_sun_angle - max_sun_angle))
+    RGB_alpha = np.dstack((RGB, alphas))
+    
     #------------------------------------------------------------------------------------------------------
 
     # Formatando a descricao a ser plotada na imagem
@@ -250,9 +266,9 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
 
     # Formatando a extensao da imagem, modificando ordem de minimo e maximo longitude e latitude
     img_extent = [extent[0], extent[2], extent[1], extent[3]]  # Min lon, Max lon, Min lat, Max lat
-
+   
     # Plotando a imagem
-    img = ax.imshow(RGB, origin='upper', extent=img_extent)
+    img = ax.imshow(RGB_alpha, origin='upper', extent=img_extent)
     
     # Adicionando descricao da imagem
     adicionando_descricao_imagem(description, institution, ax, fig)
@@ -335,8 +351,8 @@ def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_ba
         # Limpa a lista de processos
         process_sp.clear()
 
-#dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
-dir_main =  f'/mnt/e/truecolor/' 
+dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
+#dir_main =  f'/mnt/e/truecolor/' 
 dir_in = f'{dir_main}goes/'
 dir_shapefiles = f'{dir_main}shapefiles/'
 dir_colortables = f'{dir_main}colortables/'
@@ -348,12 +364,12 @@ bands['17'] = True
 process_br = []
 process_sp = []
 p_br = True
-p_sp = True
+p_sp = False
 
 # Coloque as badas em goes/band0? e coloque o nome do arquivo aqui
-new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232651250207_e20232651259515_c20232651259586.nc', 
-              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232651250207_e20232651259515_c20232651259572.nc',
-              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232651250207_e20232651259515_c20232651259577.nc'}
+new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232701130209_e20232701139517_c20232701139576.nc', 
+              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232701130209_e20232701139517_c20232701139567.nc',
+              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232701130209_e20232701139517_c20232701139576.nc'}
 
 
 iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands)
