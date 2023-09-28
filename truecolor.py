@@ -244,7 +244,7 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     max_sun_angle = 0.85
     # Normalize the transparency mask
     alphas = ((alphas - max_sun_angle) / (min_sun_angle - max_sun_angle))
-    RGBA = np.dstack((RGB, alphas))
+    RGB = np.dstack((RGB, alphas))
     
     #------------------------------------------------------------------------------------------------------
 

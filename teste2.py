@@ -5,24 +5,20 @@
 #matplotlib.use('Agg')
 #--------------------------------
 from netCDF4 import Dataset                                  # Read / Write NetCDF4 files
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes # Add a child inset axes to this existing axes.
-from datetime import datetime, timedelta                     # Library to convert julian day to dd-mm-yyyy                            # Import the CPT convert function
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes # Add a child inset axes to this existing axes.                   # Library to convert julian day to dd-mm-yyyy                            # Import the CPT convert function
 from matplotlib.colors import LinearSegmentedColormap        # Linear interpolation for color maps
 import matplotlib.pyplot as plt                              # Plotting library
 import numpy as np                                           # Scientific computing with Python
 import cartopy, cartopy.crs as ccrs                          # Plot maps
-import cartopy.io.shapereader as shpreader                   # Import shapefiles
-import time as t                                             # Time access and conversion
-import math                                                  # Import math                                                # Unix style pathname pattern expansion
-import sys                                                   # Import the "system specific parameters and functions" module
-import os 												     # Miscellaneous operating system interfaces
+import cartopy.io.shapereader as shpreader                   # Import shapefiles										     # Miscellaneous operating system interfaces
 from os.path import dirname, abspath                         # Return a normalized absolutized version of the pathname path                                            # To check which OS is being used
 from pyorbital import astronomy                      # Import GDAL                            # Update the HTML animation 
 from remap import remap                                      # Import the Remap function 
 import warnings
 warnings.filterwarnings("ignore")
-
-
+from truecolor import applying_rayleigh_correction, apply_cira_stretch, area_para_recorte, calculating_lons_lats
+import datetime                                              # Biblioteca para trabalhar com datas
+from datetime import timedelta   
 import colorsys							 # Conversions between color systems
 
 def loadCPT(path):
@@ -118,7 +114,7 @@ longitude = file_ch02.variables['goes_imager_projection'].longitude_of_projectio
 
 # Getting the file time and date
 add_seconds = int(file_ch02.variables['time_bounds'][0])
-date = datetime(2000,1,1,12) + timedelta(seconds=add_seconds)
+date = datetime.datetime(2000,1,1,12) + timedelta(seconds=add_seconds)
 date_formated = date.strftime('%Y-%m-%d %H:%M UTC')
 date_file = date.strftime('%Y%m%d%H%M')
 year = date.strftime('%Y')
@@ -200,42 +196,88 @@ data_ch13 = ((data_ch13 - IRmin) / (IRmax - IRmin)) * 255
 # Convert to int
 data_ch13 = data_ch13.astype(int)
 
+v_extent = 'br'
+dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
+dir_in = f'{dir_main}goes/'
+ch01 = f'{dir_in}band01/OR_ABI-L2-CMIPF-M6C01_G16_s20232701130209_e20232701139517_c20232701139576.nc'
+ch02 = f'{dir_in}band02/OR_ABI-L2-CMIPF-M6C02_G16_s20232701130209_e20232701139517_c20232701139567.nc'
+ch03 = f'{dir_in}band03/OR_ABI-L2-CMIPF-M6C03_G16_s20232701130209_e20232701139517_c20232701139576.nc'
 
-import matplotlib.image as mpimg
-# Open the False Color Look Up Table
-img = mpimg.imread('/home/guimoura/Documentos/Goes-16-Processamento/colortables/wx-star.com_GOES-R_ABI_False-Color-LUT_sat20.png')
-# Flip the array (for some reason, is necessary to flip the LUT horizontally)
-img = np.fliplr(img)
-# Apply the look up table based on the Band 02 reflectances and Band 13 Brightness Temperatures
-data = img[data_ch02,data_ch13,0:3]
+# Lê a imagem da banda 01
+file_ch01 = Dataset(ch01)
+# Lê o identificador do satélite
+satellite = getattr(file_ch01, 'platform_ID')
+# Lê a longitude central
+longitude = file_ch01.variables['goes_imager_projection'].longitude_of_projection_origin
+
+# Lê a data do arquivo
+add_seconds = int(file_ch01.variables['time_bounds'][0])
+date = datetime.datetime(2000,1,1,12) + timedelta(seconds=add_seconds)
+date_file = date.strftime('%Y%m%d_%H%M%S')
+date_img = date.strftime('%d-%b-%Y %H:%M UTC')
+
+# Area de interesse para recorte
+extent, resolution = area_para_recorte(v_extent)
+variable = "CMI"
+
+#------------------------------------------------------------------------------------------------------#
+#-------------------------------------------Reprojetando----------------------------------------------#
+#------------------------------------------------------------------------------------------------------#
+# reprojetando band 01
+grid = remap(ch01, variable, extent, resolution)
+# Lê o retorno da função
+data_ch01 = grid.ReadAsArray()
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+# reprojetando band 02
+grid = remap(ch02, variable, extent, resolution)
+# Lê o retorno da função
+data_ch02 = grid.ReadAsArray()
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
+# reprojetando band 03
+grid = remap(ch03, variable, extent, resolution)
+# Lê o retorno da função 
+data_ch03 = grid.ReadAsArray()
+#------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
 
 
-#print(data_ch02.shape[0])
-lons = np.arange(extent[0], extent[2], ((extent[2] - extent[0]) / data_ch02.shape[1]))
-lats = np.arange(extent[1], extent[3], ((extent[3] - extent[1]) / data_ch02.shape[0]))
+#------------------------------------------------------------------------------------------------------
+# Calculando correção zenith
+utc_time, lats, lons, sun_zenith, data_ch01, data_ch02, data_ch03 = calculating_lons_lats(date, extent, data_ch01, data_ch02, data_ch03)
 
-lons, lats = np.meshgrid(lons, lats)
-lats = np.flipud(lats)
+# Aplicando a correção de Rayleigh
+data_ch01, data_ch02 = applying_rayleigh_correction(file_ch01, utc_time, lons, lats, sun_zenith, data_ch01, data_ch02, longitude)
 
+# Calculando as cores verdadeiras (True color)
+R = data_ch02
+G = (data_ch01 + data_ch02) / 2 * 0.93 + 0.07 * data_ch03 
+B = data_ch01
 
-#print("Calculating the sun zenith angle...")
-utc_time = datetime(int(year), int(month), int(day), int(hour), int(minutes))
-sun_zenith = np.zeros((data_ch02.shape[0], data_ch02.shape[1]))
-sun_zenith = astronomy.sun_zenith_angle(utc_time, lons[:,:][::1,::1], lats[:,:][::1,::1])
+# Aplicando o estiramento CIRA
+R = apply_cira_stretch(R)
+G = apply_cira_stretch(G)
+B = apply_cira_stretch(B)
 
-## AQUI
-data[sun_zenith > 85] = [0.0,0.0,0.0]
-mask = (data == [0.0,0.0,0.0]).all(axis=2)
-#apply the mask to overwrite the pixels
-data[mask] = [0.0,0.0,0.0]
+# Create the RGB
+RGB = np.stack([R, G, B], axis=2)		
+
+# If zenith angle is greater than 85°, the composite pixel is zero
+RGB[sun_zenith > 85] = 0
+# Create the mask for the regions with zero
+mask = (RGB == [0.0,0.0,0.0]).all(axis=2)
+# Apply the mask to overwrite the pixels
+RGB[mask] = [0,0,0]
 
 # Create the fading transparency between the regions with the
 # sun zenith angle of 75° and 85°
 alphas = sun_zenith / 100
 min_sun_angle = 0.75
 max_sun_angle = 0.85
+# Normalize the transparency mask
 alphas = ((alphas - max_sun_angle) / (min_sun_angle - max_sun_angle))
-data = np.dstack((data, alphas))
+RGB = np.dstack((RGB, alphas))
 
 # Choose the visualization extent (min lon, min lat, max lon, max lat)
 extent = [-90.0, -40.0, -20.0, 10.0]
@@ -293,7 +335,7 @@ data3[np.logical_or(data3 < -80, data3 > -28)] = np.nan
 img4 = ax.imshow(data3, cmap=cmap, vmin=-103, vmax=84, alpha=1.0, origin='upper', extent=img_extent, zorder=4)
 
 # Plot the image
-ax.imshow(data, origin='upper', extent=img_extent, zorder=5)
+ax.imshow(RGB, origin='upper', extent=img_extent, zorder=5)
 
 # Save the image
 plt.savefig('/home/guimoura/Documentos/Goes-16-Processamento/' + satellite + "_" + 'True Color' + "_" + date_file + '.png', facecolor='black')#, bbox_inches='tight', pad_inches=0, facecolor='black')
