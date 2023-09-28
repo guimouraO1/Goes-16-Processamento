@@ -19,7 +19,8 @@ warnings.filterwarnings("ignore")
 from truecolor import applying_rayleigh_correction, apply_cira_stretch, area_para_recorte, calculating_lons_lats
 import datetime                                              # Biblioteca para trabalhar com datas
 from datetime import timedelta   
-import colorsys							 # Conversions between color systems
+import colorsys
+import time as t                                             
 
 def loadCPT(path):
 
@@ -95,9 +96,14 @@ def loadCPT(path):
 print('Script started.')
 start = t.time()  
 
-# Band 02 path
-path_ch02 = '/home/guimoura/Documentos/Goes-16-Processamento/goes/band02/OR_ABI-L2-CMIPF-M6C02_G16_s20232701130209_e20232701139517_c20232701139567.nc'
-path_ch13 = '/home/guimoura/Documentos/Goes-16-Processamento/goes/band13/OR_ABI-L2-CMIPF-M6C13_G16_s20232701130209_e20232701139529_c20232701139586.nc'
+v_extent = 'br'
+dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
+dir_in = f'{dir_main}goes/'
+ch01 = f'{dir_in}band01/OR_ABI-L2-CMIPF-M6C01_G16_s20232711000209_e20232711009517_c20232711009575.nc'
+ch02 = f'{dir_in}band02/OR_ABI-L2-CMIPF-M6C02_G16_s20232711000209_e20232711009517_c20232711009565.nc'
+ch03 = f'{dir_in}band03/OR_ABI-L2-CMIPF-M6C03_G16_s20232711000209_e20232711009518_c20232711009576.nc'
+path_ch02 = f'{dir_in}band02/OR_ABI-L2-CMIPF-M6C02_G16_s20232711000209_e20232711009517_c20232711009565.nc'
+path_ch13 = f'{dir_in}band13/OR_ABI-L2-CMIPF-M6C13_G16_s20232711000209_e20232711009529_c20232711009596.nc'
 
 # Read the image
 file_ch02 = Dataset(path_ch02)
@@ -196,12 +202,6 @@ data_ch13 = ((data_ch13 - IRmin) / (IRmax - IRmin)) * 255
 # Convert to int
 data_ch13 = data_ch13.astype(int)
 
-v_extent = 'br'
-dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
-dir_in = f'{dir_main}goes/'
-ch01 = f'{dir_in}band01/OR_ABI-L2-CMIPF-M6C01_G16_s20232701130209_e20232701139517_c20232701139576.nc'
-ch02 = f'{dir_in}band02/OR_ABI-L2-CMIPF-M6C02_G16_s20232701130209_e20232701139517_c20232701139567.nc'
-ch03 = f'{dir_in}band03/OR_ABI-L2-CMIPF-M6C03_G16_s20232701130209_e20232701139517_c20232701139576.nc'
 
 # Lê a imagem da banda 01
 file_ch01 = Dataset(ch01)
