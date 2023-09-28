@@ -21,99 +21,35 @@ import datetime                                              # Biblioteca para t
 from datetime import timedelta   
 import colorsys
 import time as t                                             
-
-def loadCPT(path):
-
-    try:
-        f = open(path)
-    except:
-        print ("File ", path, "not found")
-        return None
-
-    lines = f.readlines()
-
-    f.close()
-
-    x = np.array([])
-    r = np.array([])
-    g = np.array([])
-    b = np.array([])
-
-    colorModel = 'RGB'
-
-    for l in lines:
-        ls = l.split()
-        if l[0] == '#':
-            if ls[-1] == 'HSV':
-                colorModel = 'HSV'
-                continue
-            else:
-                continue
-        if ls[0] == 'B' or ls[0] == 'F' or ls[0] == 'N':
-            pass
-        else:
-            x=np.append(x,float(ls[0]))
-            r=np.append(r,float(ls[1]))
-            g=np.append(g,float(ls[2]))
-            b=np.append(b,float(ls[3]))
-            xtemp = float(ls[4])
-            rtemp = float(ls[5])
-            gtemp = float(ls[6])
-            btemp = float(ls[7])
-
-        x=np.append(x,xtemp)
-        r=np.append(r,rtemp)
-        g=np.append(g,gtemp)
-        b=np.append(b,btemp)
-
-    if colorModel == 'HSV':
-        for i in range(r.shape[0]):
-            rr, gg, bb = colorsys.hsv_to_rgb(r[i]/360.,g[i],b[i])
-        r[i] = rr ; g[i] = gg ; b[i] = bb
-
-    if colorModel == 'RGB':
-        r = r/255.0
-        g = g/255.0
-        b = b/255.0
-
-    xNorm = (x - x[0])/(x[-1] - x[0])
-
-    red   = []
-    blue  = []
-    green = []
-
-    for i in range(len(x)):
-        red.append([xNorm[i],r[i],r[i]])
-        green.append([xNorm[i],g[i],g[i]])
-        blue.append([xNorm[i],b[i],b[i]])
-
-    colorDict = {'red': red, 'green': green, 'blue': blue}
-    #print(red)
-
-    return colorDict
+from remap import loadCPT
+from truecolor import area_para_recorte
+from truecolor import adicionando_shapefile
+from truecolor import adicionando_linhas
+from truecolor import adicionando_descricao_imagem
+from truecolor import adicionando_logos
+from osgeo import gdal, osr, ogr   
+import os 
 
 # Start the time counter
 print('Script started.')
 start = t.time()  
 
 v_extent = 'br'
-dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
+#dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
+dir_main = f'/mnt/e/TrueColor/'
+dir_out = f'{dir_main}output/'
 dir_in = f'{dir_main}goes/'
-ch01 = f'{dir_in}band01/OR_ABI-L2-CMIPF-M6C01_G16_s20232711000209_e20232711009517_c20232711009575.nc'
-ch02 = f'{dir_in}band02/OR_ABI-L2-CMIPF-M6C02_G16_s20232711000209_e20232711009517_c20232711009565.nc'
-ch03 = f'{dir_in}band03/OR_ABI-L2-CMIPF-M6C03_G16_s20232711000209_e20232711009518_c20232711009576.nc'
-path_ch02 = f'{dir_in}band02/OR_ABI-L2-CMIPF-M6C02_G16_s20232711000209_e20232711009517_c20232711009565.nc'
-path_ch13 = f'{dir_in}band13/OR_ABI-L2-CMIPF-M6C13_G16_s20232711000209_e20232711009529_c20232711009596.nc'
+ch01 = f'{dir_in}OR_ABI-L2-CMIPF-M6C01_G16_s20232711030209_e20232711039517_c20232711039571.nc'
+ch02 = f'{dir_in}OR_ABI-L2-CMIPF-M6C02_G16_s20232711030209_e20232711039518_c20232711039573.nc'
+ch03 = f'{dir_in}OR_ABI-L2-CMIPF-M6C03_G16_s20232711030209_e20232711039517_c20232711039571.nc'
+path_ch13 = f'{dir_in}OR_ABI-L2-CMIPF-M6C13_G16_s20232711030209_e20232711039529_c20232711040001.nc'
 
 # Read the image
-file_ch02 = Dataset(path_ch02)
-
+file_ch02 = Dataset(ch02)
 # Read the satellite 
 satellite = getattr(file_ch02, 'platform_ID')
-
-# Desired resolution
-resolution = 4
-
+# Area de interesse para recorte
+extent, resolution = area_para_recorte(v_extent)
 # Read the central longitude
 longitude = file_ch02.variables['goes_imager_projection'].longitude_of_projection_origin
 
@@ -129,14 +65,11 @@ day = date.strftime('%d')
 hour = date.strftime('%H')
 minutes = date.strftime('%M')
 
-# Choose the visualization extent (min lon, min lat, max lon, max lat)
-extent = [-90.0, -40.0, -20.0, 10.0]
-
 # Variable to remap
 variable = "CMI"
 
 # Call the reprojection funcion
-grid = remap(path_ch02, variable, extent, resolution)
+grid = remap(ch02, variable, extent, resolution)
      
 # Read the data returned by the function 
 data_ch02 = grid.ReadAsArray()
@@ -181,13 +114,10 @@ data_ch02 = data_ch02.astype(int)
 
 # Read the image
 file_ch13 = Dataset(path_ch13)
-
 # Variable to remap
 variable = "CMI"
-
 # Call the reprojection funcion
 grid = remap(path_ch13, variable, extent, resolution)
-     
 # Read the data returned by the function 
 data_ch13 = grid.ReadAsArray()
 data_ch13_original = data_ch13
@@ -212,16 +142,12 @@ file_ch01 = Dataset(ch01)
 satellite = getattr(file_ch01, 'platform_ID')
 # Lê a longitude central
 longitude = file_ch01.variables['goes_imager_projection'].longitude_of_projection_origin
-
 # Lê a data do arquivo
 add_seconds = int(file_ch01.variables['time_bounds'][0])
 date = datetime.datetime(2000,1,1,12) + timedelta(seconds=add_seconds)
 date_file = date.strftime('%Y%m%d_%H%M%S')
 date_img = date.strftime('%d-%b-%Y %H:%M UTC')
 
-# Area de interesse para recorte
-extent, resolution = area_para_recorte(v_extent)
-variable = "CMI"
 
 #------------------------------------------------------------------------------------------------------#
 #-------------------------------------------Reprojetando----------------------------------------------#
@@ -264,14 +190,12 @@ B = apply_cira_stretch(B)
 
 # Create the RGB
 RGB = np.stack([R, G, B], axis=2)		
-
 # If zenith angle is greater than 85°, the composite pixel is zero
 RGB[sun_zenith > 85] = 0
 # Create the mask for the regions with zero
 mask = (RGB == [0.0,0.0,0.0]).all(axis=2)
 # Apply the mask to overwrite the pixels
 RGB[mask] = [0,0,0]
-
 # Create the fading transparency between the regions with the
 # sun zenith angle of 75° and 85°
 alphas = sun_zenith / 100
@@ -281,8 +205,22 @@ max_sun_angle = 0.85
 alphas = ((alphas - max_sun_angle) / (min_sun_angle - max_sun_angle))
 RGB = np.dstack((RGB, alphas))
 
-# Choose the visualization extent (min lon, min lat, max lon, max lat)
-extent = [-90.0, -40.0, -20.0, 10.0]
+
+# Formatando a descricao a ser plotada na imagem
+description = f' GOES-{satellite} Natural True Color {date_img}'
+institution = "CEPAGRI - UNICAMP"
+
+d_p_i = 150
+# Formatando a descricao a ser plotada na imagem
+fig = plt.figure(figsize=(2000 / float(d_p_i), 2000 / float(d_p_i)), frameon=True, dpi=d_p_i, edgecolor='black', facecolor='black')
+  
+# Utilizando projecao geoestacionaria no cartopy
+ax = plt.axes(projection=ccrs.PlateCarree())
+
+img_extent = [extent[0], extent[2], extent[1], extent[3]]  
+
+# Plotando a imagem
+ax.imshow(RGB, origin='upper', extent=img_extent,  zorder=5)
 
 extent_night = [-156.29, -81.32, 6.29, 81.32]
 
@@ -291,26 +229,42 @@ extent_night[1] = extent[1] - 10
 extent_night[2] = extent[2] + 10
 extent_night[3] = extent[3] + 10
 
-# Plot configuration
-plot_config = {
-"dpi": 150, 
-}
+#print("Reading the night lights...")
+raster = gdal.Open(f'{dir_main}/Maps/BlackMarble_2016_01deg_geo.tif')
+ulx, xres, xskew, uly, yskew, yres = raster.GetGeoTransform()
+lrx = ulx + (raster.RasterXSize * xres)
+lry = uly + (raster.RasterYSize * yres)
+corners = [ulx, lry, lrx, uly]
+if (satellite == 'G16'):
+    extent = [-156.29, -81.32, 6.29, 81.32]
+elif (satellite == 'G17'):
+    extent = [-216.29, -81.32, -54.29, 81.32]
+min_lon = extent[0]; max_lon = extent[2]; min_lat = extent[1]; max_lat = extent[3]
+raster = gdal.Translate('teste.tif', raster, projWin = [min_lon, max_lat, max_lon, min_lat])
+array2 = raster.ReadAsArray()
+r = array2[0,:,:].astype(float)
+g = array2[1,:,:].astype(float)
+b = array2[2,:,:].astype(float)
+r[r==4] = 0
+g[g==5] = 0
+b[b==15] = 0
+geo = raster.GetGeoTransform()
+xres = geo[1]
+yres = geo[5]
+xmin = geo[0]
+xmax = geo[0] + (xres * raster.RasterXSize)
+ymin = geo[3] + (yres * raster.RasterYSize)
+ymax = geo[3]
+lons_n = np.arange(xmin,xmax,xres)
+lats_n = np.arange(ymax,ymin,yres)
+lons_n, lats_n = np.meshgrid(lons_n,lats_n)
+color_tuples = (np.array([r[:-1,:-1].flatten(), g[:-1,:-1].flatten(), b[:-1,:-1].flatten()]).transpose())/255
+raster = None 
+os.remove('teste.tif')
 
-# Choose the plot size (width x height, in inches)
-fig = plt.figure(figsize=(data_ch02.shape[1]/float(plot_config["dpi"]), data_ch02.shape[0]/float(plot_config["dpi"])), dpi=plot_config["dpi"])
-  
-# Define the projection
-proj = ccrs.PlateCarree()
+# Plot the night lights
+img1 = ax.pcolormesh(lons_n, lats_n, r, color=color_tuples, transform=ccrs.PlateCarree(), zorder=1)
 
-# Use the PlateCarree projection in cartopy
-ax = plt.axes([0, 0, 1, 1], projection=proj)
-ax.set_extent([extent[0], extent[2], extent[1], extent[3]], ccrs.PlateCarree())
-
-# Define the image extent
-img_extent = [extent[0], extent[2], extent[1], extent[3]]
-
-#print("First layer...")
-# Apply range limits for clean IR channel
 data1 = data_ch13_original
 data1 = np.maximum(data1, 90)
 data1 = np.minimum(data1, 313)
@@ -320,26 +274,35 @@ data1 = (data1-90)/(313-90)
 data1 = 1 - data1
 img2 = ax.imshow(data1, cmap='gray', vmin=0.1, vmax=0.25, alpha = 0.6, origin='upper', extent=img_extent, zorder=2)
 
-#print("Second layer...")
 # SECOND LAYER
 data2 = data1
 data2[data2 < 0.20] = np.nan
 img3 = ax.imshow(data2, cmap='gray', vmin=0.15, vmax=0.30, alpha = 1.0, origin='upper', extent=img_extent, zorder=3)
 
 # Converts a CPT file to be used in Python
-cpt = loadCPT('/home/guimoura/Documentos/Goes-16-Processamento/colortables/IR4AVHRR6.cpt')   
+cpt = loadCPT(f'{dir_main}colortables/IR4AVHRR6.cpt')   
 cmap = LinearSegmentedColormap('cpt', cpt) 
-#print("Third layer...")
 # THIRD LAYER
 data3 = data_ch13_original
 data3 = data_ch13_original - 273.15
 data3[np.logical_or(data3 < -80, data3 > -28)] = np.nan
 img4 = ax.imshow(data3, cmap=cmap, vmin=-103, vmax=84, alpha=1.0, origin='upper', extent=img_extent, zorder=4)
 
-# Plot the image
-ax.imshow(RGB, origin='upper', extent=img_extent, zorder=5)
+rgb_type = 'truecolor'
 
-# Save the image
-plt.savefig('/home/guimoura/Documentos/Goes-16-Processamento/' + satellite + "_" + 'True Color' + "_" + date_file + '.png', facecolor='black')#, bbox_inches='tight', pad_inches=0, facecolor='black')
+# Adicionando o shapefile dos estados brasileiros
+adicionando_shapefile(v_extent, ax)
+
+# Adicionando  linhas dos litorais
+adicionando_linhas(ax)
+
+# Adicionando descricao da imagem
+adicionando_descricao_imagem(description, institution, ax, fig)
+
+# Adicionando os logos
+adicionando_logos(fig)
+
+# Salvando a imagem de saida
+plt.savefig(f'{dir_out}{rgb_type}/{rgb_type}_{date_file}_{v_extent}.png', bbox_inches='tight', pad_inches=0, dpi=d_p_i)
 
 print('Total processing time:', round((t.time() - start),2), 'seconds.') 

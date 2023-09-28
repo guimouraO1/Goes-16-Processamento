@@ -236,15 +236,7 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     mask = (RGB == [0.0,0.0,0.0]).all(axis=2)
     # Apply the mask to overwrite the pixels
     RGB[mask] = [0,0,0]
-    
-    # Create the fading transparency between the regions with the
-    # sun zenith angle of 75° and 85°
-    alphas = sun_zenith / 100
-    min_sun_angle = 0.75
-    max_sun_angle = 0.85
-    # Normalize the transparency mask
-    alphas = ((alphas - max_sun_angle) / (min_sun_angle - max_sun_angle))
-    RGB = np.dstack((RGB, alphas))
+
     
     #------------------------------------------------------------------------------------------------------
 
@@ -352,8 +344,8 @@ def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_ba
         # Limpa a lista de processos
         process_sp.clear()
 
-dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
-#dir_main =  f'/mnt/e/truecolor/' 
+#dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
+dir_main = f'/mnt/e/TrueColor/'
 dir_in = f'{dir_main}goes/'
 dir_shapefiles = f'{dir_main}shapefiles/'
 dir_colortables = f'{dir_main}colortables/'
@@ -368,9 +360,8 @@ p_br = True
 p_sp = False
 
 # Coloque as badas em goes/band0? e coloque o nome do arquivo aqui
-new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232701130209_e20232701139517_c20232701139576.nc', 
-              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232701130209_e20232701139517_c20232701139567.nc',
-              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232701130209_e20232701139517_c20232701139576.nc'}
-
+new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232711120209_e20232711129518_c20232711129578.nc', 
+              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232711120209_e20232711129517_c20232711129568.nc',
+              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232711120209_e20232711129517_c20232711129567.nc'}
 
 iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands)
