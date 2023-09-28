@@ -39,10 +39,10 @@ v_extent = 'br'
 dir_main = f'/mnt/e/TrueColor/'
 dir_out = f'{dir_main}output/'
 dir_in = f'{dir_main}goes/'
-ch01 = f'{dir_in}OR_ABI-L2-CMIPF-M6C01_G16_s20232711030209_e20232711039517_c20232711039571.nc'
-ch02 = f'{dir_in}OR_ABI-L2-CMIPF-M6C02_G16_s20232711030209_e20232711039518_c20232711039573.nc'
-ch03 = f'{dir_in}OR_ABI-L2-CMIPF-M6C03_G16_s20232711030209_e20232711039517_c20232711039571.nc'
-path_ch13 = f'{dir_in}OR_ABI-L2-CMIPF-M6C13_G16_s20232711030209_e20232711039529_c20232711040001.nc'
+ch01 = f'{dir_in}OR_ABI-L2-CMIPF-M6C01_G16_s20232710820209_e20232710829517_c20232710829577.nc'
+ch02 = f'{dir_in}OR_ABI-L2-CMIPF-M6C02_G16_s20232710820209_e20232710829517_c20232710829566.nc'
+ch03 = f'{dir_in}OR_ABI-L2-CMIPF-M6C03_G16_s20232710820209_e20232710829517_c20232710829577.nc'
+path_ch13 = f'{dir_in}OR_ABI-L2-CMIPF-M6C13_G16_s20232710820209_e20232710829529_c20232710829597.nc'
 
 # Read the image
 file_ch02 = Dataset(ch02)
@@ -219,15 +219,7 @@ ax = plt.axes(projection=ccrs.PlateCarree())
 
 img_extent = [extent[0], extent[2], extent[1], extent[3]]  
 
-# Plotando a imagem
-ax.imshow(RGB, origin='upper', extent=img_extent,  zorder=5)
-
 extent_night = [-156.29, -81.32, 6.29, 81.32]
-
-extent_night[0] = extent[0] - 10
-extent_night[1] = extent[1] - 10
-extent_night[2] = extent[2] + 10
-extent_night[3] = extent[3] + 10
 
 #print("Reading the night lights...")
 raster = gdal.Open(f'{dir_main}/Maps/BlackMarble_2016_01deg_geo.tif')
@@ -235,11 +227,8 @@ ulx, xres, xskew, uly, yskew, yres = raster.GetGeoTransform()
 lrx = ulx + (raster.RasterXSize * xres)
 lry = uly + (raster.RasterYSize * yres)
 corners = [ulx, lry, lrx, uly]
-if (satellite == 'G16'):
-    extent = [-156.29, -81.32, 6.29, 81.32]
-elif (satellite == 'G17'):
-    extent = [-216.29, -81.32, -54.29, 81.32]
-min_lon = extent[0]; max_lon = extent[2]; min_lat = extent[1]; max_lat = extent[3]
+
+min_lon = extent_night[0]; max_lon = extent_night[2]; min_lat = extent_night[1]; max_lat = extent_night[3]
 raster = gdal.Translate('teste.tif', raster, projWin = [min_lon, max_lat, max_lon, min_lat])
 array2 = raster.ReadAsArray()
 r = array2[0,:,:].astype(float)
@@ -287,6 +276,9 @@ data3 = data_ch13_original
 data3 = data_ch13_original - 273.15
 data3[np.logical_or(data3 < -80, data3 > -28)] = np.nan
 img4 = ax.imshow(data3, cmap=cmap, vmin=-103, vmax=84, alpha=1.0, origin='upper', extent=img_extent, zorder=4)
+
+# Plotando a imagem
+ax.imshow(RGB, origin='upper', extent=img_extent,  zorder=5)
 
 rgb_type = 'truecolor'
 

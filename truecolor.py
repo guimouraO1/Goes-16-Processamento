@@ -63,14 +63,14 @@ def adicionando_shapefile(v_extent, ax):
         # Adicionando o shapefile dos estados brasileiros
         # https://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_municipais/municipio_2020/Brasil/BR/BR_UF_2020.zip
         shapefile = list(shpreader.Reader(dir_shapefiles + 'brasil/BR_UF_2020').geometries())
-        ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='cyan', facecolor='none', linewidth=0.7)
+        ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='cyan', facecolor='none', linewidth=0.7, zorder=6)
     elif v_extent == 'sp':
         # Adicionando o shapefile dos estados brasileiros e da cidade de Campinas
         # https://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_municipais/municipio_2020/Brasil/BR/BR_UF_2020.zip
         shapefile = list(shpreader.Reader(dir_shapefiles + 'brasil/BR_UF_2020').geometries())
-        ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='cyan', facecolor='none', linewidth=0.7)
+        ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='cyan', facecolor='none', linewidth=0.7, zorder=7)
         shapefile = list(shpreader.Reader(dir_shapefiles + 'campinas/campinas').geometries())
-        ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='yellow', facecolor='none', linewidth=1)
+        ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='yellow', facecolor='none', linewidth=1,zorder=8)
 
 
 def adicionando_descricao_imagem(description, institution, ax, fig, cruz=False):
@@ -364,4 +364,4 @@ new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232711120209_e20232711129518_
               '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232711120209_e20232711129517_c20232711129568.nc',
               '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232711120209_e20232711129517_c20232711129567.nc'}
 
-iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands)
+#iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands)
