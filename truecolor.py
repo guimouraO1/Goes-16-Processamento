@@ -16,8 +16,6 @@ from pyorbital.astronomy import get_alt_az
 from pyorbital.orbital import get_observer_look
 from multiprocessing import Process  # Utilitario para multiprocessamento
 import logging
-import os
-from cartopy.feature.nightshade import Nightshade
 
 ###########################################################################
 #              Script de Processamento para True Color Goes-16            #
@@ -238,6 +236,7 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     mask = (RGB == [0.0,0.0,0.0]).all(axis=2)
     # Apply the mask to overwrite the pixels
     RGB[mask] = [0,0,0]
+    
     # Create the fading transparency between the regions with the
     # sun zenith angle of 75° and 85°
     alphas = sun_zenith / 100
@@ -245,7 +244,7 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     max_sun_angle = 0.85
     # Normalize the transparency mask
     alphas = ((alphas - max_sun_angle) / (min_sun_angle - max_sun_angle))
-    RGB_alpha = np.dstack((RGB, alphas))
+    RGB = np.dstack((RGB, alphas))
     
     #------------------------------------------------------------------------------------------------------
 
@@ -259,7 +258,7 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
 
     # Utilizando projecao geoestacionaria no cartopy
     ax = plt.axes(projection=ccrs.PlateCarree())
-    
+
     # Adicionando o shapefile dos estados brasileiros
     adicionando_shapefile(v_extent, ax)
 
@@ -270,7 +269,7 @@ def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     img_extent = [extent[0], extent[2], extent[1], extent[3]]  # Min lon, Max lon, Min lat, Max lat
    
     # Plotando a imagem
-    img = ax.imshow(RGB, origin='upper', extent=img_extent)
+    ax.imshow(RGB, origin='upper', extent=img_extent,  zorder=1)
     
     # Adicionando descricao da imagem
     adicionando_descricao_imagem(description, institution, ax, fig)
@@ -353,8 +352,8 @@ def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_ba
         # Limpa a lista de processos
         process_sp.clear()
 
-#dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
-dir_main =  f'/mnt/e/truecolor/' 
+dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
+#dir_main =  f'/mnt/e/truecolor/' 
 dir_in = f'{dir_main}goes/'
 dir_shapefiles = f'{dir_main}shapefiles/'
 dir_colortables = f'{dir_main}colortables/'
