@@ -180,13 +180,6 @@ data_ch02 = data_ch02.astype(int)
 # Read the image
 file_ch13 = Dataset(path_ch13)
 
-# Read the resolution
-band_resolution_km = getattr(file_ch13, 'spatial_resolution')
-band_resolution_km = float(band_resolution_km[:band_resolution_km.find("km")])
-
-# Division factor to reduce image size
-f = math.ceil(float(resolution / band_resolution_km))
-
 # Variable to remap
 variable = "CMI"
 
@@ -207,8 +200,7 @@ data_ch13 = ((data_ch13 - IRmin) / (IRmax - IRmin)) * 255
 # Convert to int
 data_ch13 = data_ch13.astype(int)
 
-#print("Reading the False Color Look Up Table...")
- 
+
 import matplotlib.image as mpimg
 # Open the False Color Look Up Table
 img = mpimg.imread('/home/guimoura/Documentos/Goes-16-Processamento/colortables/wx-star.com_GOES-R_ABI_False-Color-LUT_sat20.png')
@@ -217,37 +209,32 @@ img = np.fliplr(img)
 # Apply the look up table based on the Band 02 reflectances and Band 13 Brightness Temperatures
 data = img[data_ch02,data_ch13,0:3]
 
-# Eliminate values outside the globe
-#mask = (data == [data[0,0]])
-#data[mask] = np.nan
-
 
 #print(data_ch02.shape[0])
 lons = np.arange(extent[0], extent[2], ((extent[2] - extent[0]) / data_ch02.shape[1]))
-print(lons)
 lats = np.arange(extent[1], extent[3], ((extent[3] - extent[1]) / data_ch02.shape[0]))
-print(lats)
 
 lons, lats = np.meshgrid(lons, lats)
 lats = np.flipud(lats)
+
 
 #print("Calculating the sun zenith angle...")
 utc_time = datetime(int(year), int(month), int(day), int(hour), int(minutes))
 sun_zenith = np.zeros((data_ch02.shape[0], data_ch02.shape[1]))
 sun_zenith = astronomy.sun_zenith_angle(utc_time, lons[:,:][::1,::1], lats[:,:][::1,::1])
 
-
+## AQUI
 data[sun_zenith > 85] = [0.0,0.0,0.0]
 mask = (data == [0.0,0.0,0.0]).all(axis=2)
 #apply the mask to overwrite the pixels
 data[mask] = [0.0,0.0,0.0]
+
 # Create the fading transparency between the regions with the
 # sun zenith angle of 75° and 85°
 alphas = sun_zenith / 100
 min_sun_angle = 0.75
 max_sun_angle = 0.85
 alphas = ((alphas - max_sun_angle) / (min_sun_angle - max_sun_angle))
-#alpha = ~np.all(data == [0.0,0.0,0.0], axis=2)
 data = np.dstack((data, alphas))
 
 # Choose the visualization extent (min lon, min lat, max lon, max lat)
@@ -262,14 +249,7 @@ extent_night[3] = extent[3] + 10
 
 # Plot configuration
 plot_config = {
-"resolution": band_resolution_km, 
 "dpi": 150, 
-"states_color": 'white', "states_width": data_ch02.shape[0] * 0.00006, 
-"countries_color": 'gold', "countries_width": data_ch02.shape[0] * 0.00012,
-"continents_color": 'gold', "continents_width": data_ch02.shape[0] * 0.00025,
-"grid_color": 'white', "grid_width": data_ch02.shape[0] * 0.00025, "grid_interval": 10.0,
-"title_text": "GOES-" + satellite[1:3] + " FALSE COLOR ", "title_size": int(data_ch02.shape[1] * 0.005), "title_x_offset": int(data_ch02.shape[1] * 0.01), "title_y_offset": data_ch02.shape[0] - int(data_ch02.shape[0] * 0.016), 
-"file_name_id_1": satellite,  "file_name_id_2": 'product'
 }
 
 # Choose the plot size (width x height, in inches)
@@ -316,8 +296,6 @@ img4 = ax.imshow(data3, cmap=cmap, vmin=-103, vmax=84, alpha=1.0, origin='upper'
 ax.imshow(data, origin='upper', extent=img_extent, zorder=5)
 
 # Save the image
-plt.savefig('/home/guimoura/Documentos/Goes-16-Processamento/' + plot_config["file_name_id_1"] + "_" + plot_config["file_name_id_2"] + "_" + date_file + '.png', facecolor='black')#, bbox_inches='tight', pad_inches=0, facecolor='black')
-
-
+plt.savefig('/home/guimoura/Documentos/Goes-16-Processamento/' + satellite + "_" + 'True Color' + "_" + date_file + '.png', facecolor='black')#, bbox_inches='tight', pad_inches=0, facecolor='black')
 
 print('Total processing time:', round((t.time() - start),2), 'seconds.') 
