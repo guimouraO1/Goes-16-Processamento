@@ -35,14 +35,14 @@ print('Script started.')
 start = t.time()  
 
 v_extent = 'br'
-#dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
-dir_main = f'/mnt/e/TrueColor/'
+dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
+#dir_main = f'/mnt/e/TrueColor/'
 dir_out = f'{dir_main}output/'
 dir_in = f'{dir_main}goes/'
-ch01 = f'{dir_in}OR_ABI-L2-CMIPF-M6C01_G16_s20232710820209_e20232710829517_c20232710829577.nc'
-ch02 = f'{dir_in}OR_ABI-L2-CMIPF-M6C02_G16_s20232710820209_e20232710829517_c20232710829566.nc'
-ch03 = f'{dir_in}OR_ABI-L2-CMIPF-M6C03_G16_s20232710820209_e20232710829517_c20232710829577.nc'
-path_ch13 = f'{dir_in}OR_ABI-L2-CMIPF-M6C13_G16_s20232710820209_e20232710829529_c20232710829597.nc'
+ch01 = f'{dir_in}band01/OR_ABI-L2-CMIPF-M6C01_G16_s20232720400207_e20232720409515_c20232720409584.nc'
+ch02 = f'{dir_in}band02/OR_ABI-L2-CMIPF-M6C02_G16_s20232720400207_e20232720409515_c20232720409573.nc'
+ch03 = f'{dir_in}band03/OR_ABI-L2-CMIPF-M6C03_G16_s20232720400207_e20232720409515_c20232720409583.nc'
+path_ch13 = f'{dir_in}band13/OR_ABI-L2-CMIPF-M6C13_G16_s20232720400207_e20232720409527_c20232720410003.nc'
 
 # Read the image
 file_ch02 = Dataset(ch02)
@@ -219,7 +219,7 @@ ax = plt.axes(projection=ccrs.PlateCarree())
 
 img_extent = [extent[0], extent[2], extent[1], extent[3]]  
 
-extent_night = [-156.29, -81.32, 6.29, 81.32]
+extent_night = [-90.0, -40.0, -20.0, 10.0] 
 
 #print("Reading the night lights...")
 raster = gdal.Open(f'{dir_main}/Maps/BlackMarble_2016_01deg_geo.tif')
@@ -229,6 +229,7 @@ lry = uly + (raster.RasterYSize * yres)
 corners = [ulx, lry, lrx, uly]
 
 min_lon = extent_night[0]; max_lon = extent_night[2]; min_lat = extent_night[1]; max_lat = extent_night[3]
+                                                      #[-156.29, 6.29,  81.32, 81.32] 
 raster = gdal.Translate('teste.tif', raster, projWin = [min_lon, max_lat, max_lon, min_lat])
 array2 = raster.ReadAsArray()
 r = array2[0,:,:].astype(float)
@@ -249,33 +250,19 @@ lats_n = np.arange(ymax,ymin,yres)
 lons_n, lats_n = np.meshgrid(lons_n,lats_n)
 color_tuples = (np.array([r[:-1,:-1].flatten(), g[:-1,:-1].flatten(), b[:-1,:-1].flatten()]).transpose())/255
 raster = None 
-os.remove('teste.tif')
+#os.remove('teste.tif')
 
 # Plot the night lights
-img1 = ax.pcolormesh(lons_n, lats_n, r, color=color_tuples, transform=ccrs.PlateCarree(), zorder=1)
+img1 = ax.pcolormesh(lons_n, lats_n, r, color=color_tuples, zorder=1)
 
-data1 = data_ch13_original
-data1 = np.maximum(data1, 90)
-data1 = np.minimum(data1, 313)
-# Normalize the channel between a range
-data1 = (data1-90)/(313-90)
-# Invert colors
-data1 = 1 - data1
-img2 = ax.imshow(data1, cmap='gray', vmin=0.1, vmax=0.25, alpha = 0.6, origin='upper', extent=img_extent, zorder=2)
-
-# SECOND LAYER
-data2 = data1
-data2[data2 < 0.20] = np.nan
-img3 = ax.imshow(data2, cmap='gray', vmin=0.15, vmax=0.30, alpha = 1.0, origin='upper', extent=img_extent, zorder=3)
-
-# Converts a CPT file to be used in Python
-cpt = loadCPT(f'{dir_main}colortables/IR4AVHRR6.cpt')   
-cmap = LinearSegmentedColormap('cpt', cpt) 
-# THIRD LAYER
-data3 = data_ch13_original
-data3 = data_ch13_original - 273.15
-data3[np.logical_or(data3 < -80, data3 > -28)] = np.nan
-img4 = ax.imshow(data3, cmap=cmap, vmin=-103, vmax=84, alpha=1.0, origin='upper', extent=img_extent, zorder=4)
+# data1 = data_ch13_original
+# data1 = np.maximum(data1, 90)
+# data1 = np.minimum(data1, 313)
+# # Normalize the channel between a range
+# data1 = (data1-90)/(313-90)
+# # Invert colors
+# data1 = 1 - data1
+# img2 = ax.imshow(data1, cmap='gray', vmin=0.1, vmax=0.25, alpha = 0.6, origin='upper', extent=img_extent, zorder=2)
 
 # Plotando a imagem
 ax.imshow(RGB, origin='upper', extent=img_extent,  zorder=5)

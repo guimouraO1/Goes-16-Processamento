@@ -344,8 +344,8 @@ def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_ba
         # Limpa a lista de processos
         process_sp.clear()
 
-#dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
-dir_main = f'/mnt/e/TrueColor/'
+dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
+#dir_main = f'/mnt/e/TrueColor/'
 dir_in = f'{dir_main}goes/'
 dir_shapefiles = f'{dir_main}shapefiles/'
 dir_colortables = f'{dir_main}colortables/'
