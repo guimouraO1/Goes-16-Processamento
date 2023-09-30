@@ -9,7 +9,6 @@ import cartopy, cartopy.crs as ccrs
 from remap import remap                                      
 import warnings
 warnings.filterwarnings("ignore")
-from truecolor import applying_rayleigh_correction, apply_cira_stretch, area_para_recorte, calculating_lons_lats
 import datetime                                              
 from datetime import timedelta  
 import time as t                                             
