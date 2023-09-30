@@ -219,4 +219,4 @@ new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232711120209_e20232711129518_
               '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232711120209_e20232711129517_c20232711129568.nc',
               '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232711120209_e20232711129517_c20232711129567.nc'}
 
-#iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands)
+iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands)
