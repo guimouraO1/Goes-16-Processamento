@@ -1,19 +1,16 @@
-# Required modules
-#--------------------------------
-#to run in a pure text terminal:
+
 #import matplotlib
 #matplotlib.use('Agg')
-#--------------------------------
-from netCDF4 import Dataset                                  # Read / Write NetCDF4 files
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes # Add a child inset axes to this existing axes.                   # Library to convert julian day to dd-mm-yyyy                            # Import the CPT convert function
-import matplotlib.pyplot as plt                              # Plotting library
-import numpy as np                                           # Scientific computing with Python
-import cartopy, cartopy.crs as ccrs                          # Plot maps                 # Import GDAL                            # Update the HTML animation 
-from remap import remap                                      # Import the Remap function 
+from netCDF4 import Dataset                                  
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes                      
+import matplotlib.pyplot as plt                              
+import numpy as np                                           
+import cartopy, cartopy.crs as ccrs                          
+from remap import remap                                      
 import warnings
 warnings.filterwarnings("ignore")
 from truecolor import applying_rayleigh_correction, apply_cira_stretch, area_para_recorte, calculating_lons_lats
-import datetime                                              # Biblioteca para trabalhar com datas
+import datetime                                              
 from datetime import timedelta  
 import time as t                                             
 from remap import loadCPT
@@ -40,8 +37,6 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
     variable = "CMI"
     #---------------------------------------------------------------------------------------------
     #---------------------------------------------------------------------------------------------
-
-
 
     # Lê a imagem da banda 01
     file_ch01 = Dataset(ch01)
@@ -98,6 +93,9 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
 
     # Create the RGB
     RGB = np.stack([R, G, B], axis=2)		
+    
+    #------------------------------------------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------
     # If zenith angle is greater than 85°, the composite pixel is zero
     RGB[sun_zenith > 85] = 0
     # Create the mask for the regions with zero
@@ -111,7 +109,9 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
     # Normalize the transparency mask
     alphas = ((alphas - max_sun_angle) / (min_sun_angle - max_sun_angle))
     RGB = np.dstack((RGB, alphas))
-
+    #------------------------------------------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------
+    
     # Formatando a descricao a ser plotada na imagem
     description = f' GOES-16 Natural True Color + 10.3 µm {date_img}'
     institution = "CEPAGRI - UNICAMP"
@@ -153,7 +153,7 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
     # Salvando a imagem de saida
     plt.savefig(f'{dir_out}{rgb_type}/{rgb_type}_{date_file}_{v_extent}.png', bbox_inches='tight', pad_inches=0, dpi=d_p_i)
 
-    print('Total processing time:', round((t.time() - start),2), 'seconds.') 
+    print(f'Total processing time: {round((t.time() - start),2)} seconds.')
 
 def iniciar_processo_truecolorN(p_br, p_sp, bands, process_br, process_sp, new_bands):
     # Checagem se e possivel gerar imagem TrueColor
