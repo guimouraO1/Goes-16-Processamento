@@ -40,22 +40,8 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
     variable = "CMI"
     #---------------------------------------------------------------------------------------------
     #---------------------------------------------------------------------------------------------
-    # Call the reprojection funcion
-    grid = remap(ch13, variable, extent, resolution)
-    # Read the data returned by the function 
-    data_ch13 = grid.ReadAsArray()
-    data_ch13_original = data_ch13
-    # Minimum and maximum reflectances
-    IRmin = 89.62
-    IRmax = 341.27
-    # Anything that is below the min or greater than max, keep min and max
-    data_ch13[data_ch13 > IRmax] = IRmax
-    # Convert to 0 - 255
-    data_ch13 = ((data_ch13 - IRmin) / (IRmax - IRmin)) * 255
-    # Convert to int
-    data_ch13 = data_ch13.astype(int)
-    #---------------------------------------------------------------------------------------------
-    #---------------------------------------------------------------------------------------------
+
+
 
     # Lê a imagem da banda 01
     file_ch01 = Dataset(ch01)
@@ -88,8 +74,13 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
     data_ch03 = grid.ReadAsArray()
     #------------------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------------------
-
+     # reprojetando band 13
+    grid = remap(ch13, variable, extent, resolution)
+    # Lê o retorno da função
+    data_ch13 = grid.ReadAsArray()
     #------------------------------------------------------------------------------------------------------
+    #------------------------------------------------------------------------------------------------------
+    
     # Calculando correção zenith
     utc_time, lats, lons, sun_zenith, data_ch01, data_ch02, data_ch03 = calculating_lons_lats(date, extent, data_ch01, data_ch02, data_ch03)
 
@@ -100,7 +91,6 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
     R = data_ch02
     G = (data_ch01 + data_ch02) / 2 * 0.93 + 0.07 * data_ch03 
     B = data_ch01
-
     # Aplicando o estiramento CIRA
     R = apply_cira_stretch(R)
     G = apply_cira_stretch(G)
@@ -114,9 +104,7 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
     mask = (RGB == [0.0,0.0,0.0]).all(axis=2)
     # Apply the mask to overwrite the pixels
     RGB[mask] = [0,0,0]
-
-    # Create the fading transparency between the regions with the
-    # sun zenith angle of 75° and 85°
+    # Create the fading transparency between the regions with the sun zenith angle of 75° and 85°
     alphas = sun_zenith / 100
     min_sun_angle = 0.75
     max_sun_angle = 0.85
@@ -125,7 +113,7 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
     RGB = np.dstack((RGB, alphas))
 
     # Formatando a descricao a ser plotada na imagem
-    description = f' GOES-16 Natural True Color + Night Band 13 - 10.3 µm {date_img}'
+    description = f' GOES-16 Natural True Color + 10.3 µm {date_img}'
     institution = "CEPAGRI - UNICAMP"
 
     d_p_i = 150
@@ -137,8 +125,8 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
 
     img_extent = [extent[0], extent[2], extent[1], extent[3]]  
 
-    # # band13
-    data1 = data_ch13_original
+    #band13
+    data1 = data_ch13
     data1 = np.maximum(data1, 90)
     data1 = np.minimum(data1, 313)
     data1 = (data1-90)/(313-90)
@@ -236,7 +224,7 @@ def iniciar_processo_truecolorN(p_br, p_sp, bands, process_br, process_sp, new_b
         # Limpa a lista de processos
         process_sp.clear()
 
-    
+
 dirs = get_dirs()
 # Importando dirs do modulo dirs.py
 
