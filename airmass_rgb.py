@@ -5,16 +5,18 @@ import numpy as np                           # Import the Numpy package
 from netCDF4 import Dataset                  # Import the NetCDF Python interface
 import cartopy, cartopy.crs as ccrs          # Plot maps
 from datetime import datetime, timedelta     # Library to convert julian day to dd-mm-yyyy
-from truecolor import area_para_recorte
-from truecolor import adicionando_shapefile
-from truecolor import adicionando_linhas
-from truecolor import adicionando_descricao_imagem
-from truecolor import adicionando_logos
+from utilities import area_para_recorte
+from utilities import adicionando_shapefile
+from utilities import adicionando_linhas
+from utilities import adicionando_descricao_imagem
+from utilities import adicionando_logos
 from remap import remap
 import time as time    
 import logging
 from multiprocessing import Process  # Utilitario para multiprocessamento
 from matplotlib.colors import LinearSegmentedColormap, to_rgba
+from dirs import get_dirs
+
 
 ###########################################################################
 #              Script de Processamento para Air Mass Goes-16              #
@@ -186,7 +188,7 @@ def process_airmass(rgb_type, v_extent, path_ch08=None, path_ch10=None, path_ch1
     logging.info('Total processing time Airmass:', round((time.time() - start),2), 'seconds.') 
 
 
-def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands):
+def iniciar_processo_airmass(p_br, p_sp, bands, process_br, process_sp, new_bands):
     # Checagem se e possivel gerar imagem Air Mass
     if bands['22']:
         # Se a variavel de controle de processamento do brasil for True, realiza o processamento
@@ -260,13 +262,16 @@ def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_ba
         process_sp.clear()
 
 
-dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
-#dir_main =  f'/mnt/e/truecolor/' 
-dir_out = f'{dir_main}output/'
-dir_in = f'{dir_main}goes/'
-dir_shapefiles = f'{dir_main}shapefiles/'
-dir_colortables = f'{dir_main}colortables/'
-dir_logos = f'{dir_main}logos/'
+dirs = get_dirs()
+# Importando dirs do modulo dirs.py
+
+dir_in = dirs['dir_in']
+dir_out = dirs['dir_out']
+dir_shapefiles = dirs['dir_shapefiles']
+dir_colortables = dirs['dir_colortables']
+dir_logos = dirs['dir_logos']
+dir_out = dirs['dir_out']
+
 
 bands = {}
 bands['22'] = True
@@ -282,4 +287,4 @@ new_bands = { '08': f'OR_ABI-L2-CMIPF-M6C08_G16_s20232641020207_e20232641029515_
               '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20232641020207_e20232641029526_c20232641029588.nc'
               }
 
-iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands)
+iniciar_processo_airmass(p_br, p_sp, bands, process_br, process_sp, new_bands)
