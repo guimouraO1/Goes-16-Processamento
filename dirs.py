@@ -11,6 +11,7 @@ def get_dirs():
         'dir_shapefiles': dir_main + 'shapefiles/',
         'dir_colortables': dir_main + 'colortables/',
         'dir_logos': dir_main + 'logos/',
+        'dir_maps': dir_main + 'Maps/',
     }
     
     return dirs

@@ -23,6 +23,7 @@ O repositório está estruturado da seguinte forma:
 - **airmass_rgb.py:** Script para processamento de imagens Air Mass.
 - **remap.py:** Script para reprojeção de dados.
 - **truecolor.py:** Script para processamento de imagens True Color.
+- **truecolorN.py:** Script para processamento de imagens True Color + banda 13 para lugares escuros.
 - **Processamento.py:** Script principal para iniciar o processamento.
 
 ## Pré-requisitos

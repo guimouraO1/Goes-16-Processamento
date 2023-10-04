@@ -24,9 +24,13 @@ from utilities import calculating_lons_lats
 from dirs import get_dirs
 import logging
 from multiprocessing import Process  
+from osgeo import gdal, osr, ogr 
+import os
+import warnings
+warnings.filterwarnings("ignore")
 
 def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13=None):
-    
+    global dir_maps
     start = t.time()  
     #---------------------------------------------------------------------------------------------
     #---------------------------------------------------------------------------------------------
@@ -108,6 +112,33 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
     # Normalize the transparency mask
     alphas = ((alphas - max_sun_angle) / (min_sun_angle - max_sun_angle))
     RGB = np.dstack((RGB, alphas))
+    
+   
+    raster = gdal.Open(f'{dir_maps}BlackMarble_2016_01deg_geo.tif')
+    ulx, xres, xskew, uly, yskew, yres = raster.GetGeoTransform()
+    lrx = ulx + (raster.RasterXSize * xres)
+    lry = uly + (raster.RasterYSize * yres)
+    corners = [ulx, lry, lrx, uly]
+    min_lon = extent[0]; max_lon = extent[2]; min_lat = extent[1]; max_lat = extent[3]
+    raster = gdal.Translate('teste.tif', raster, projWin = [min_lon, max_lat, max_lon, min_lat])
+    
+    #lendo o RGB 
+    array = raster.ReadAsArray()
+    R_night = array[0,:,:].astype(float) / 255
+    G_night = array[1,:,:].astype(float) / 255
+    B_night = array[2,:,:].astype(float) / 255
+    
+    R_night[R_night==4] = 0
+    G_night[G_night==5] = 0
+    B_night[B_night==15] = 0
+    
+   
+    rgb_night = np.stack([R_night,G_night,B_night], axis=2)
+    
+    img_extent = [extent[0], extent[2], extent[1], extent[3]]  
+    
+    os.remove('teste.tif')
+    
     #------------------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------------------
     
@@ -121,9 +152,9 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
     
     # Utilizando projecao geoestacionaria no cartopy
     ax = plt.axes(projection=ccrs.PlateCarree())
-
-    img_extent = [extent[0], extent[2], extent[1], extent[3]]  
-
+    
+    img1 = ax.imshow(rgb_night, extent=img_extent)
+    
     #band13
     data1 = data_ch13
     data1 = np.maximum(data1, 90)
@@ -131,8 +162,8 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
     data1 = (data1-90)/(313-90)
     data1 = 1 - data1
 
-    # Plotando night band13
-    ax.imshow(data1, cmap='bone', vmin=0.1, vmax=0.25, alpha = 0.9, origin='upper', extent=img_extent)
+    # Plotando 
+    ax.imshow(data1, cmap='gray', vmin=0.1, vmax=0.25, alpha = 0.3, origin='upper', extent=img_extent)
 
     # Plotando a imagem  # TrueColor
     ax.imshow(RGB, origin='upper', extent=img_extent)
@@ -226,7 +257,7 @@ def iniciar_processo_truecolorN(p_br, p_sp, bands, process_br, process_sp, new_b
 
 dirs = get_dirs()
 # Importando dirs do modulo dirs.py
-
+dir_maps = dirs['dir_maps']
 dir_in = dirs['dir_in']
 dir_out = dirs['dir_out']
 dir_shapefiles = dirs['dir_shapefiles']
@@ -241,15 +272,15 @@ process_sp = []
 p_br = True
 p_sp = False
 
-# new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232710820209_e20232710829517_c20232710829577.nc', 
-#               '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232710820209_e20232710829517_c20232710829566.nc',
-#               '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232710820209_e20232710829517_c20232710829577.nc',
-#               '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20232710820209_e20232710829529_c20232710829597.nc'
-#               }
-new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232711120209_e20232711129518_c20232711129578.nc', 
-              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232711120209_e20232711129517_c20232711129568.nc',
-              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232711120209_e20232711129517_c20232711129567.nc',
-              '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20232711120209_e20232711129529_c20232711129598.nc'}
+new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232710820209_e20232710829517_c20232710829577.nc', 
+              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232710820209_e20232710829517_c20232710829566.nc',
+              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232710820209_e20232710829517_c20232710829577.nc',
+              '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20232710820209_e20232710829529_c20232710829597.nc'
+              }
+# new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232711120209_e20232711129518_c20232711129578.nc', 
+#               '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232711120209_e20232711129517_c20232711129568.nc',
+#               '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232711120209_e20232711129517_c20232711129567.nc',
+#               '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20232711120209_e20232711129529_c20232711129598.nc'}
 
 
 iniciar_processo_truecolorN(p_br, p_sp, bands, process_br, process_sp, new_bands)
