@@ -14,15 +14,18 @@ from pyorbital import astronomy
 from pyspectral.rayleigh import Rayleigh                     # Correção atmosférica no espectro visível 
 from pyorbital.astronomy import get_alt_az
 from pyorbital.orbital import get_observer_look
+from dirs import get_dirs
 
-
-#dir_main = f'/home/guimoura/Documentos/Goes-16-Processamento/'
-dir_main = f'/mnt/e/TrueColor/'
-dir_in = f'{dir_main}goes/'
-dir_shapefiles = f'{dir_main}shapefiles/'
-dir_colortables = f'{dir_main}colortables/'
-dir_logos = f'{dir_main}logos/'
-dir_out = f'{dir_main}output/'
+dirs = get_dirs()
+# Importando dirs do modulo dirs.py
+dir_main = dirs['dir_main']
+dir_maps = dirs['dir_maps']
+dir_in = dirs['dir_in']
+dir_out = dirs['dir_out']
+dir_shapefiles = dirs['dir_shapefiles']
+dir_colortables = dirs['dir_colortables']
+dir_logos = dirs['dir_logos']
+dir_out = dirs['dir_out']
 
 def adicionando_linhas(ax):
     # Adicionando linhas da costa

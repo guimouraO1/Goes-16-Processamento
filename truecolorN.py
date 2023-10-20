@@ -113,8 +113,11 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
     alphas = ((alphas - max_sun_angle) / (min_sun_angle - max_sun_angle))
     RGB = np.dstack((RGB, alphas))
     
-   
-    raster = gdal.Open(f'{dir_maps}BlackMarble_2016_01deg_geo.tif')
+    if v_extent == 'sp':
+        raster = gdal.Open(f'{dir_maps}BlackMarble_2016_B2_geo.tif')
+    else:
+        raster = gdal.Open(f'{dir_maps}BlackMarble_2016_01deg_geo.tif')
+    
     ulx, xres, xskew, uly, yskew, yres = raster.GetGeoTransform()
     lrx = ulx + (raster.RasterXSize * xres)
     lry = uly + (raster.RasterYSize * yres)
@@ -270,12 +273,12 @@ bands['17'] = True
 process_br = []
 process_sp = []
 p_br = True
-p_sp = False
+p_sp = True
 
-new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232710820209_e20232710829517_c20232710829577.nc', 
-              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232710820209_e20232710829517_c20232710829566.nc',
-              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232710820209_e20232710829517_c20232710829577.nc',
-              '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20232710820209_e20232710829529_c20232710829597.nc'
+new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232720400207_e20232720409515_c20232720409584.nc', 
+              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232720400207_e20232720409515_c20232720409573.nc',
+              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232720400207_e20232720409515_c20232720409583.nc',
+              '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20232720400207_e20232720409527_c20232720410003.nc'
               }
 # new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232711120209_e20232711129518_c20232711129578.nc', 
 #               '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232711120209_e20232711129517_c20232711129568.nc',
