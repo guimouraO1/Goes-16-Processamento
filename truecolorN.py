@@ -116,7 +116,7 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
     if v_extent == 'sp':
         raster = gdal.Open(f'{dir_maps}BlackMarble_2016_B2_geo.tif')
     else:
-        raster = gdal.Open(f'{dir_maps}BlackMarble_2016_01deg_geo.tif')
+        raster = gdal.Open(f'{dir_maps}BlackMarble_2016_3km_geo.tif')
     
     ulx, xres, xskew, uly, yskew, yres = raster.GetGeoTransform()
     lrx = ulx + (raster.RasterXSize * xres)

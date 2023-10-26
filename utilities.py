@@ -2,7 +2,7 @@ import matplotlib
 matplotlib.use('Agg')
 from netCDF4 import Dataset                                  # Lê / Escrever arquivos NetCDF4
 import datetime                                              # Biblioteca para trabalhar com datas
-from datetime import timedelta                               # Biblioteca para converter dia juliano para dd-mm-yyyy
+from datetime import timedelta, datetime                           # Biblioteca para converter dia juliano para dd-mm-yyyy
 import matplotlib.pyplot as plt                              # Biblioteca para plotar gráficos
 import matplotlib.colors                                     # Cores do Matplotlib
 import numpy as np                                           # Computação científica com Python
@@ -15,6 +15,18 @@ from pyspectral.rayleigh import Rayleigh                     # Correção atmosf
 from pyorbital.astronomy import get_alt_az
 from pyorbital.orbital import get_observer_look
 from dirs import get_dirs
+import os
+
+# Training: Python and GOES-R Imagery: Script 8 - Functions for download data from AWS
+# -----------------------------------------------------------------------------------------------------------
+# Required modules
+import os  # Miscellaneous operating system interfaces
+import boto3  # Amazon Web Services (AWS) SDK for Python
+from botocore import UNSIGNED  # boto3 config
+from botocore.config import Config  # boto3 config
+
+# -----------------------------------------------------------------
+
 
 dirs = get_dirs()
 # Importando dirs do modulo dirs.py
@@ -100,7 +112,7 @@ def calculating_lons_lats(date, extent, data_ch01, data_ch02, data_ch03):
     lats = yy.reshape(data_ch01.shape[0], data_ch01.shape[1])
 
     # Obter o ano, mês, dia, hora e minuto para aplicar a correção zenital
-    utc_time = datetime.datetime(int(year), int(month), int(day), int(hour), int(minutes))
+    utc_time = datetime(int(year), int(month), int(day), int(hour), int(minutes))
     sun_zenith = np.zeros((data_ch01.shape[0], data_ch01.shape[1]))
     sun_zenith = astronomy.sun_zenith_angle(utc_time, lons, lats)
 
@@ -164,3 +176,46 @@ def apply_cira_stretch(band_data):
     band_data /= denom
     return 1 + band_data
 
+
+def download_prod(yyyymmddhhmn, product_name, path_dest):
+    os.makedirs(path_dest, exist_ok=True)
+
+    year = datetime.strptime(yyyymmddhhmn, '%Y%m%d%H%M').strftime('%Y')
+    day_of_year = datetime.strptime(yyyymmddhhmn, '%Y%m%d%H%M').strftime('%j')
+    hour = datetime.strptime(yyyymmddhhmn, '%Y%m%d%H%M').strftime('%H')
+    min = datetime.strptime(yyyymmddhhmn, '%Y%m%d%H%M').strftime('%M')
+
+    # AMAZON repository information
+    # https://noaa-goes16.s3.amazonaws.com/index.html
+    bucket_name = 'noaa-goes16'
+
+    # Initializes the S3 client
+    s3_client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
+    # -----------------------------------------------------------------------------------------------------------
+    # File structure
+    prefix = f'{product_name}/{year}/{day_of_year}/{hour}/OR_{product_name}-M6_G16_s{year}{day_of_year}{hour}{min}'
+
+    # Seach for the file on the server
+    s3_result = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix, Delimiter="/")
+
+    # -----------------------------------------------------------------------------------------------------------
+    # Check if there are files available
+    if 'Contents' not in s3_result:
+        # There are no files
+        print(f'No files found for the date: {yyyymmddhhmn}, Product-{product_name}')
+        return -1
+    else:
+        # There are files
+        for obj in s3_result['Contents']:
+            key = obj['Key']
+            # Print the file name
+            file_name = key.split('/')[-1].split('.')[0]
+
+            # Download the file
+            if os.path.exists(f'{path_dest}/{file_name}.nc'):
+                print(f'File {path_dest}{file_name}.nc exists')
+            else:
+                # print(f'Downloading file {path_dest}{file_name}.nc')
+                s3_client.download_file(bucket_name, key, f'{path_dest}/{file_name}.nc')
+    return f'{file_name}'
+# -----------------------------------------------------------------------------------------------------------

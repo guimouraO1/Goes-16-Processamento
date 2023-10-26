@@ -12,6 +12,7 @@ def get_dirs():
         'dir_colortables': dir_main + 'colortables/',
         'dir_logos': dir_main + 'logos/',
         'dir_maps': dir_main + 'Maps/',
+        'dir_temp': dir_main + 'temp/'
     }
     
     return dirs
