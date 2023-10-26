@@ -41,9 +41,9 @@ dir_out = dirs['dir_out']
 
 def adicionando_linhas(ax):
     # Adicionando linhas da costa
-    ax.coastlines(resolution='10m', color='cyan', linewidth=0.5)
+    ax.coastlines(resolution='10m', color='cyan', linewidth=0.5, zorder=4)
     # Adicionando linhas das fronteiras
-    ax.add_feature(cartopy.feature.BORDERS, edgecolor='cyan', linewidth=0.5)
+    ax.add_feature(cartopy.feature.BORDERS, edgecolor='cyan', linewidth=0.5, zorder=4)
     # Adicionando paralelos e meridianos
     gl = ax.gridlines(crs=ccrs.PlateCarree(), color='white', alpha=0.7, linestyle='--', linewidth=0.2, xlocs=np.arange(-180, 180, 5), ylocs=np.arange(-90, 90, 5))
     gl.top_labels = False

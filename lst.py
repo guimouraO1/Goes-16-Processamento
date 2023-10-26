@@ -27,6 +27,7 @@ import cartopy.feature as cfeature # features
 dirs = get_dirs()
 dir_in = dirs['dir_in']
 dir_out = dirs['dir_out']
+dir_colortables = dirs['dir_colortables']
 
 # Captura a hora para contagem do tempo de processamento da imagem
 processing_start_time = time.time()
@@ -40,18 +41,27 @@ extent, resolution = area_para_recorte(v_extent)
 
 satellite = '16'
 variable = 'LST'
+
 grid = remap(file, variable, extent, resolution)
+
 # Lê o retorno da função
 data_lst = grid.ReadAsArray()- 273.15
 
+# Abrindo imagem com a biblioteca GDAL
+raw = gdal.Open(f'NETCDF:{file}:' + 'LST', gdal.GA_ReadOnly)
+metadata = raw.GetMetadata()
+dtime = metadata.get('NC_GLOBAL#time_coverage_start')
+date = (datetime.strptime(dtime, '%Y-%m-%dT%H:%M:%S.%fZ'))
+date_img = date.strftime('%d-%b-%Y %H:%M UTC')
+date_file = date.strftime('%Y%m%d_%H%M%S')
 
+# Define a temperatura minima
 min_temp = -26
-
 # Mask values less than -20 degrees and values close to NaN
 data_lst = np.ma.masked_where((data_lst < min_temp), data_lst)
 
 # Formatando a descricao a ser plotada na imagem
-description = f' GOES-{satellite} Land Surface Temperature '
+description = f' GOES-{satellite} Land Surface Temperature {date_img}'
 institution = "CEPAGRI - UNICAMP"
 
 # Definindo tamanho da imagem de saida
@@ -61,16 +71,14 @@ fig = plt.figure(figsize=(2000 / float(d_p_i), 2000 / float(d_p_i)), frameon=Tru
 # Utilizando projecao geoestacionaria no cartopy
 ax = plt.axes(projection=ccrs.PlateCarree())
 
-# Adicionando  linhas dos litorais
-adicionando_linhas(ax)
-
 # Formatando a extensao da imagem, modificando ordem de minimo e maximo longitude e latitude
 img_extent = [extent[0], extent[2], extent[1], extent[3]]  # Min lon, Max lon, Min lat, Max lat
 
 # facecolor='DarkSeaGreen'
-ax.add_feature(cfeature.LAND, facecolor='DimGray', zorder=1)
+ax.add_feature(cfeature.LAND, facecolor='SlateGrey', zorder=1)
+
 # facecolor= cornflowerblue deepskyblue dodgerblue
-ax.add_feature(cfeature.OCEAN, facecolor='dodgerblue', zorder=3)
+ax.add_feature(cfeature.OCEAN, facecolor='SteelBlue', zorder=2)
 
 # Plotando a imagem
 img = ax.imshow(data_lst, origin='upper',vmin=-25, vmax=60,extent=img_extent,  zorder=2, cmap='Spectral_r')
@@ -83,6 +91,9 @@ cb.ax.tick_params(axis='x', colors='black', labelsize=8)  # Alterando cor e tama
 cb.outline.set_visible(False)  # Removendo contorno da barra da paleta de cores
 cb.ax.tick_params(width=0)  # Removendo ticks da barra da paleta de cores
 cb.ax.xaxis.set_tick_params(pad=-13)  # Colocando os rotulos dentro da barra da paleta de coreses
+
+# Adicionando  linhas dos litorais
+adicionando_linhas(ax)
 
 # Adicionando descricao da imagem
 adicionando_descricao_imagem(description, institution, ax, fig)
