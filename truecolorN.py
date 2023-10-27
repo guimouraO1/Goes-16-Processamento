@@ -136,7 +136,7 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
     B_night[B_night==15] = 0
     
    
-    rgb_night = np.stack([R_night,G_night,B_night], axis=2)
+    rgb_night = np.stack([R_night, G_night, B_night], axis=2)
     
     img_extent = [extent[0], extent[2], extent[1], extent[3]]  
     
