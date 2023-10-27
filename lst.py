@@ -76,22 +76,15 @@ def process_lst(file, v_extent):
 
     # Formatando a extensao da imagem, modificando ordem de minimo e maximo longitude e latitude
     img_extent = [extent[0], extent[2], extent[1], extent[3]]  # Min lon, Max lon, Min lat, Max lat
-
-    # Cor do fundo da imagem
-    #ax.add_feature(cfeature.LAND, facecolor='SlateGrey', zorder=1)
-
-    # Cor do mar da imagem
-    #ax.add_feature(cfeature.OCEAN, facecolor='SteelBlue', zorder=2)
     
     # Criando imagem de fundo Natural Earth 1
     raster = gdal.Open(f'{dir_maps}HYP_HR_SR_OB_DR.tif')
     ulx, xres, xskew, uly, yskew, yres = raster.GetGeoTransform()
     lrx = ulx + (raster.RasterXSize * xres)
     lry = uly + (raster.RasterYSize * yres)
-    corners = [ulx, lry, lrx, uly]
     min_lon = extent[0]; max_lon = extent[2]; min_lat = extent[1]; max_lat = extent[3]
     raster = gdal.Translate('teste.tif', raster, projWin = [min_lon, max_lat, max_lon, min_lat])
-    #lendo o RGB 
+    # Lendo o RGB 
     array = raster.ReadAsArray()
     R = array[0,:,:].astype(float) / 255
     G = array[1,:,:].astype(float) / 255
@@ -100,9 +93,11 @@ def process_lst(file, v_extent):
     G[G==5] = 0
     B[B==15] = 0
     rgb = np.stack([R, G, B], axis=2)
+    
     # PLotando imagem de fundo
     ax.imshow(rgb, extent=img_extent)
-        
+    
+    # Remove imagem de fundo tif criada
     os.remove('teste.tif')
     
     # Plotando a imagem Spectral_r
@@ -141,14 +136,15 @@ def process_lst(file, v_extent):
 
 
 def iniciar_processo_lst(p_br, p_sp, bands, new_bands):
-    # Checagem se e possivel gerar imagem TrueColor
+    # Checagem se e possivel gerar imagem Land Surface Temperature
     if bands['23']:
         # Se a variavel de controle de processamento do brasil for True, realiza o processamento
         if p_br:
             logging.info("")
             logging.info('PROCESSANDO IMAGENS LAND SURFACE TEMPERATURE "BR"...')
-            
+            # Pega o nome do produto LST2KMF 
             lst = new_bands['23']
+            # Pega o local do produto 
             file = f'{dir_in}lst/{lst}'
             try:
                 # Inicia o Processamento
@@ -161,9 +157,6 @@ def iniciar_processo_lst(p_br, p_sp, bands, new_bands):
         if p_sp:
             logging.info("")
             logging.info('PROCESSANDO IMAGENS LAND SURFACE TEMPERATURE "SP"...')
-            
-            lst = new_bands['23']
-            file = f'{dir_in}lst/{lst}'
             try:
                 # Inicia o Processamento
                 process_lst(file, 'sp')

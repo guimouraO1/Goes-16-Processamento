@@ -23,13 +23,12 @@ from utilities import applying_rayleigh_correction
 from utilities import calculating_lons_lats
 from dirs import get_dirs
 import logging
-from multiprocessing import Process  
 from osgeo import gdal, osr, ogr 
 import os
 import warnings
 warnings.filterwarnings("ignore")
 
-def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13=None):
+def process_truecolor(rgb_type, v_extent, ch01, ch02, ch03, ch13):
     global dir_maps
     start = t.time()  
     #---------------------------------------------------------------------------------------------
@@ -188,74 +187,46 @@ def process_truecolorN(rgb_type, v_extent, ch01=None, ch02=None, ch03=None, ch13
 
     print(f'Total processing time: {round((t.time() - start),2)} seconds.')
 
-def iniciar_processo_truecolorN(p_br, p_sp, bands, process_br, process_sp, new_bands):
+def iniciar_processo_truecolor(p_br, p_sp, bands, new_bands):
     # Checagem se e possivel gerar imagem TrueColor
-    if bands['17']:
+    if bands['17']:        
+        # Pegando nome dos produtos 01, 02, 03, 13
+        ch01 = new_bands['01']
+        ch02 = new_bands['02']
+        ch03 = new_bands['03']
+        ch13 = new_bands['13']
+        
+        # Pegando nome e local e do produto
+        ch01 = f'{dir_in}band01/{ch01}'
+        ch02 = f'{dir_in}band02/{ch02}'
+        ch03 = f'{dir_in}band03/{ch03}'
+        ch13 = f'{dir_in}band13/{ch13}'
+        
         # Se a variavel de controle de processamento do brasil for True, realiza o processamento
         if p_br:
             logging.info("")
             logging.info('PROCESSANDO IMAGENS TRUECOLOR WITH NIGHT "BR"...')
-            # Pegando nome das bandas 01, 02, 03, 13
-            ch01 = new_bands['01']
-            ch02 = new_bands['02']
-            ch03 = new_bands['03']
-            ch13 = new_bands['13']
-            # Montando dicionario de argumentos
-            kwargs = {'ch01': f'{dir_in}band01/{ch01}', 
-                      'ch02': f'{dir_in}band02/{ch02}', 
-                      'ch03': f'{dir_in}band03/{ch03}',
-                      'ch13': f'{dir_in}band13/{ch13}'}
             # Tenta realizar o processamento da imagem
             try:
-                # Cria o processo com a funcao de processamento
-                process = Process(target=process_truecolorN, args=("truecolor", "br"), kwargs=kwargs)
-                # Adiciona o processo na lista de controle do processamento paralelo
-                process_br.append(process)
-                # Inicia o processo
-                process.start()
+                # Inicia a funcao de processamento
+                process_truecolor("truecolor", "br", ch01, ch02, ch03, ch13)
             # Caso seja retornado algum erro do processamento, realiza o log 
             except Exception as e:
                 # Registra detalhes da exceção, como mensagem e tipo
                 logging.error(f"Erro ao criar processo: {e}")
-        # Looping de controle que pausa o processamento principal ate que todos os processos da lista de controle do processamento paralelo sejam finalizados
-        for process in process_br:
-            # Bloqueia a execução do processo principal ate que o processo cujo metodo de join() é chamado termine
-            process.join()
-        # Limpa a lista de processos
-        process_br.clear()
-        
-        # Se a variavel de controle de processamento sp for True, realiza o processamento
+
+        # Se a variavel de controle de processamento do brasil for True, realiza o processamento
         if p_sp:
             logging.info("")
-            logging.info('PROCESSANDO IMAGENS TRUECOLOR WITH NIGHT "SP"...')
-            # Pegando nome das bandas 01, 02, 03,13
-            ch01 = new_bands['01']
-            ch02 = new_bands['02']
-            ch03 = new_bands['03']
-            ch13 = new_bands['13']
-            # Montando dicionario de argumentos
-            kwargs = {'ch01': f'{dir_in}band01/{ch01}', 
-                      'ch02': f'{dir_in}band02/{ch02}', 
-                      'ch03': f'{dir_in}band03/{ch03}',
-                      'ch13': f'{dir_in}band13/{ch13}'}
+            logging.info('PROCESSANDO IMAGENS TRUECOLOR WITH NIGHT "BR"...')
             # Tenta realizar o processamento da imagem
             try:
-                # Cria o processo com a funcao de processamento
-                process = Process(target=process_truecolorN, args=("truecolor", "sp"), kwargs=kwargs)
-                # Adiciona o processo na lista de controle do processamento paralelo
-                process_sp.append(process)
-                # Inicia o processo
-                process.start()
+                # Inicia a funcao de processamento
+                process_truecolor("truecolor", "sp", ch01, ch02, ch03, ch13)
             # Caso seja retornado algum erro do processamento, realiza o log 
             except Exception as e:
                 # Registra detalhes da exceção, como mensagem e tipo
                 logging.error(f"Erro ao criar processo: {e}")
-        # Looping de controle que pausa o processamento principal ate que todos os processos da lista de controle do processamento paralelo sejam finalizados
-        for process in process_sp:
-            # Bloqueia a execução do processo principal ate que o processo cujo metodo de join() é chamado termine
-            process.join()
-        # Limpa a lista de processos
-        process_sp.clear()
 
 
 dirs = get_dirs()
@@ -270,20 +241,13 @@ dir_out = dirs['dir_out']
 
 bands = {}
 bands['17'] = True
-process_br = []
-process_sp = []
 p_br = True
 p_sp = True
 
-new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232720400207_e20232720409515_c20232720409584.nc', 
-              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232720400207_e20232720409515_c20232720409573.nc',
-              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232720400207_e20232720409515_c20232720409583.nc',
-              '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20232720400207_e20232720409527_c20232720410003.nc'
+new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20233001410210_e20233001419518_c20233001419575.nc', 
+              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20233001410210_e20233001419519_c20233001419574.nc',
+              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20233001410210_e20233001419519_c20233001419574.nc',
+              '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20233001410210_e20233001419530_c20233001419594.nc'
               }
-# new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232711120209_e20232711129518_c20232711129578.nc', 
-#               '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232711120209_e20232711129517_c20232711129568.nc',
-#               '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232711120209_e20232711129517_c20232711129567.nc',
-#               '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20232711120209_e20232711129529_c20232711129598.nc'}
 
-
-iniciar_processo_truecolorN(p_br, p_sp, bands, process_br, process_sp, new_bands)
+iniciar_processo_truecolor(p_br, p_sp, bands, new_bands)
