@@ -83,7 +83,8 @@ def process_lst(file, v_extent):
     lrx = ulx + (raster.RasterXSize * xres)
     lry = uly + (raster.RasterYSize * yres)
     min_lon = extent[0]; max_lon = extent[2]; min_lat = extent[1]; max_lat = extent[3]
-    raster = gdal.Translate('teste.tif', raster, projWin = [min_lon, max_lat, max_lon, min_lat])
+    raster = gdal.Translate('naturalEarth.tif', raster, projWin = [min_lon, max_lat, max_lon, min_lat])
+    
     # Lendo o RGB 
     array = raster.ReadAsArray()
     R = array[0,:,:].astype(float) / 255
@@ -96,10 +97,7 @@ def process_lst(file, v_extent):
     
     # PLotando imagem de fundo
     ax.imshow(rgb, extent=img_extent)
-    
-    # Remove imagem de fundo tif criada
-    os.remove('teste.tif')
-    
+        
     # Plotando a imagem Spectral_r
     img = ax.imshow(data_lst, origin='upper',vmin=-25, vmax=60, extent=img_extent, zorder=2, cmap='jet')
 

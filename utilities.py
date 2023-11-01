@@ -37,9 +37,9 @@ dir_out = dirs['dir_out']
 
 def adicionando_linhas(ax):
     # Adicionando linhas da costa
-    ax.coastlines(resolution='10m', color='dimgray', linewidth=0.5, zorder=5)
+    ax.coastlines(resolution='10m', color='cyan', linewidth=0.5, zorder=5)
     # Adicionando linhas das fronteiras
-    ax.add_feature(cartopy.feature.BORDERS, edgecolor='dimgray', linewidth=0.5, zorder=5)
+    ax.add_feature(cartopy.feature.BORDERS, edgecolor='cyan', linewidth=0.5, zorder=5)
     # Adicionando paralelos e meridianos
     gl = ax.gridlines(crs=ccrs.PlateCarree(), color='white', alpha=0.7, linestyle='--', linewidth=0.2, xlocs=np.arange(-180, 180, 5), ylocs=np.arange(-90, 90, 5))
     gl.top_labels = False
@@ -70,14 +70,14 @@ def adicionando_shapefile(v_extent, ax):
         # Adicionando o shapefile dos estados brasileiros
         # https://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_municipais/municipio_2020/Brasil/BR/BR_UF_2020.zip
         shapefile = list(shpreader.Reader(dir_shapefiles + 'brasil/BR_UF_2020.shp').geometries())
-        ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='dimgray', facecolor='none', linewidth=0.7, zorder=5)
+        ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='cyan', facecolor='none', linewidth=0.7, zorder=5)
     elif v_extent == 'sp':
         # Adicionando o shapefile dos estados brasileiros e da cidade de Campinas
         # https://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_municipais/municipio_2020/Brasil/BR/BR_UF_2020.zip
         shapefile = list(shpreader.Reader(dir_shapefiles + 'brasil/BR_UF_2020.shp').geometries())
-        ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='dimgray', facecolor='none', linewidth=0.7, zorder=5)
+        ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='cyan', facecolor='none', linewidth=0.7, zorder=5)
         shapefile = list(shpreader.Reader(dir_shapefiles + 'campinas/campinas.shp').geometries())
-        ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='dimgray', facecolor='none', linewidth=1, zorder=5)
+        ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='cyan', facecolor='none', linewidth=1, zorder=5)
 
 
 def adicionando_descricao_imagem(description, institution, ax, fig, cruz=False):

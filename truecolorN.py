@@ -112,18 +112,18 @@ def process_truecolor(rgb_type, v_extent, ch01, ch02, ch03, ch13):
     alphas = ((alphas - max_sun_angle) / (min_sun_angle - max_sun_angle))
     RGB = np.dstack((RGB, alphas))
     
+    # if v_extent == 'sp':   #Usar este caso preciso mudar a área
+    #     raster = gdal.Open(f'{dir_maps}BlackMarble_2016_B2_geo.tif')
+    # else:
+    #     raster = gdal.Open(f'{dir_maps}BlackMarble_2016_3km_geo.tif')
+    # min_lon = extent[0]; max_lon = extent[2]; min_lat = extent[1]; max_lat = extent[3]
+    # raster = gdal.Translate(f'{dir_maps}brasil.tif', raster, projWin = [min_lon, max_lat, max_lon, min_lat])
+
     if v_extent == 'sp':
-        raster = gdal.Open(f'{dir_maps}BlackMarble_2016_B2_geo.tif')
+        raster = gdal.Open(f'{dir_maps}sp.tif')
     else:
-        raster = gdal.Open(f'{dir_maps}BlackMarble_2016_3km_geo.tif')
-    
-    ulx, xres, xskew, uly, yskew, yres = raster.GetGeoTransform()
-    lrx = ulx + (raster.RasterXSize * xres)
-    lry = uly + (raster.RasterYSize * yres)
-    corners = [ulx, lry, lrx, uly]
-    min_lon = extent[0]; max_lon = extent[2]; min_lat = extent[1]; max_lat = extent[3]
-    raster = gdal.Translate('teste.tif', raster, projWin = [min_lon, max_lat, max_lon, min_lat])
-    
+        raster = gdal.Open(f'{dir_maps}brasil.tif')
+   
     #lendo o RGB 
     array = raster.ReadAsArray()
     R_night = array[0,:,:].astype(float) / 255
@@ -139,8 +139,6 @@ def process_truecolor(rgb_type, v_extent, ch01, ch02, ch03, ch13):
     
     img_extent = [extent[0], extent[2], extent[1], extent[3]]  
     
-    os.remove('teste.tif')
-    
     #------------------------------------------------------------------------------------------------------
     #------------------------------------------------------------------------------------------------------
     
@@ -155,7 +153,7 @@ def process_truecolor(rgb_type, v_extent, ch01, ch02, ch03, ch13):
     # Utilizando projecao geoestacionaria no cartopy
     ax = plt.axes(projection=ccrs.PlateCarree())
     
-    img1 = ax.imshow(rgb_night, extent=img_extent)
+    ax.imshow(rgb_night, extent=img_extent)
     
     #band13
     data1 = data_ch13
@@ -165,11 +163,11 @@ def process_truecolor(rgb_type, v_extent, ch01, ch02, ch03, ch13):
     data1 = 1 - data1
 
     # Plotando 
-    ax.imshow(data1, cmap='gray', vmin=0.1, vmax=0.25, alpha = 0.3, origin='upper', extent=img_extent)
+    ax.imshow(data1, cmap='gray', vmin=0.1, vmax=0.25, alpha = 0.1, origin='upper', extent=img_extent)
 
     # Plotando a imagem  # TrueColor
     ax.imshow(RGB, origin='upper', extent=img_extent)
-
+    
     # Adicionando o shapefile dos estados brasileiros
     adicionando_shapefile(v_extent, ax)
 
@@ -242,12 +240,12 @@ dir_out = dirs['dir_out']
 bands = {}
 bands['17'] = True
 p_br = True
-p_sp = True
+p_sp = False
 
-new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20233001410210_e20233001419518_c20233001419575.nc', 
-              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20233001410210_e20233001419519_c20233001419574.nc',
-              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20233001410210_e20233001419519_c20233001419574.nc',
-              '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20233001410210_e20233001419530_c20233001419594.nc'
+new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20233050910206_e20233050919514_c20233050919576.nc', 
+              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20233050910206_e20233050919514_c20233050919567.nc',
+              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20233050910206_e20233050919514_c20233050919566.nc',
+              '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20233050910206_e20233050919527_c20233050919586.nc'
               }
 
 iniciar_processo_truecolor(p_br, p_sp, bands, new_bands)
