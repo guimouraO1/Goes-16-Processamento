@@ -120,9 +120,9 @@ def process_truecolor(rgb_type, v_extent, ch01, ch02, ch03, ch13):
     # raster = gdal.Translate(f'{dir_maps}brasil.tif', raster, projWin = [min_lon, max_lat, max_lon, min_lat])
 
     if v_extent == 'sp':
-        raster = gdal.Open(f'{dir_maps}sp.tif')
+        raster = gdal.Open(f'{dir_maps}sp_night.tif')
     else:
-        raster = gdal.Open(f'{dir_maps}brasil.tif')
+        raster = gdal.Open(f'{dir_maps}brasil_night.tif')
    
     #lendo o RGB 
     array = raster.ReadAsArray()
@@ -239,9 +239,8 @@ dir_out = dirs['dir_out']
 
 bands = {}
 bands['17'] = True
-p_br = True
-p_sp = False
-
+p_br = False
+p_sp = True
 new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20233050910206_e20233050919514_c20233050919576.nc', 
               '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20233050910206_e20233050919514_c20233050919567.nc',
               '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20233050910206_e20233050919514_c20233050919566.nc',

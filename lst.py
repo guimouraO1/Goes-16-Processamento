@@ -78,18 +78,21 @@ def process_lst(file, v_extent):
     img_extent = [extent[0], extent[2], extent[1], extent[3]]  # Min lon, Max lon, Min lat, Max lat
     
     # Criando imagem de fundo Natural Earth 1
-    raster = gdal.Open(f'{dir_maps}HYP_HR_SR_OB_DR.tif')
-    ulx, xres, xskew, uly, yskew, yres = raster.GetGeoTransform()
-    lrx = ulx + (raster.RasterXSize * xres)
-    lry = uly + (raster.RasterYSize * yres)
-    min_lon = extent[0]; max_lon = extent[2]; min_lat = extent[1]; max_lat = extent[3]
-    raster = gdal.Translate('naturalEarth.tif', raster, projWin = [min_lon, max_lat, max_lon, min_lat])
+    # raster = gdal.Open(f'{dir_maps}HYP_HR_SR_OB_DR.tif')
+    # min_lon = extent[0]; max_lon = extent[2]; min_lat = extent[1]; max_lat = extent[3]
+    # raster = gdal.Translate(f'{dir_maps}naturalEarth_sp.tif', raster, projWin = [min_lon, max_lat, max_lon, min_lat])
+    
+    if v_extent == 'sp':
+        raster = gdal.Open(f'{dir_maps}naturalEarth_sp.tif')
+    else:
+        raster = gdal.Open(f'{dir_maps}naturalEarth_br.tif')
     
     # Lendo o RGB 
     array = raster.ReadAsArray()
     R = array[0,:,:].astype(float) / 255
     G = array[1,:,:].astype(float) / 255
     B = array[2,:,:].astype(float) / 255
+    
     R[R==4] = 0
     G[G==5] = 0
     B[B==15] = 0
@@ -167,12 +170,8 @@ def iniciar_processo_lst(p_br, p_sp, bands, new_bands):
 
 # Coloque as badas em goes/band0? e coloque o nome do arquivo aqui
 new_bands = {'23': 'OR_ABI-L2-LST2KMF-M6_G16_s20233000900210_e20233000909518_c20233000910381.nc'}
-v_extent = 'br'
-file = f"{dir_in}lst/OR_ABI-L2-LST2KMF-M6_G16_s20233000900210_e20233000909518_c20233000910381.nc"
 bands = {}
 bands['23'] = True
-process_br = []
-process_sp = []
 p_br = True
 p_sp = True
 
