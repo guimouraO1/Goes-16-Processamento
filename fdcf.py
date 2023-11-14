@@ -107,7 +107,7 @@ def save_log_erro(array_errors, nome_arquivo_txt):
                 file.write(erro)
                                  
 
-def download_arquivos_ontem():
+def download_arquivos_fdcf():
     
     start = time.time()
     
@@ -118,7 +118,7 @@ def download_arquivos_ontem():
     data_hora_atual = datetime.utcnow()
 
     #Atrasa 10 min para entrar em conformidade com Amazon
-    data_10_min = datetime.strftime(data_hora_atual-timedelta(minutes=30),'%Y%m%d%H%M')
+    data_10_min = datetime.strftime(data_hora_atual-timedelta(minutes=10),'%Y%m%d%H%M')
 
     #Correção para poder fazer download em qualquer horário
     data_hora_download_file = data_10_min[0:11]+ '0'
@@ -263,7 +263,7 @@ def process_fdcf(fdcf, v_extent, fdcf_diario):
         processo.join()
 
     # Converter a lista compartilhada para uma lista padrão
-    matriz_pixels_fogo = list(matriz_pixels_fogo)
+    matriz_pixels_fogo = list(set(matriz_pixels_fogo))
 
     # Ordenar a matriz
     matriz_pixels_fogo.sort(reverse=True)
@@ -393,7 +393,7 @@ def process_fdcf(fdcf, v_extent, fdcf_diario):
 
 if __name__ == "__main__":
       
-    fdcf = download_arquivos_ontem()
+    fdcf = download_arquivos_fdcf()
     v_extent = 'br'
     fdcf_diario = False
     
