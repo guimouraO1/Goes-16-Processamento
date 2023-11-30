@@ -200,7 +200,16 @@ def fdcf_tabela_hot_spots(date, ax):
 
     return fdcf_list
 
-             
+def processar_parte(indice_inicio, indice_fim, p_lat_lista, p_lon, brasil, matriz_pixels_fogo):
+    for i in range(indice_inicio, indice_fim):
+        if i < len(p_lat_lista):
+            if brasil[0].covers(Point(p_lon[i], p_lat_lista[i])):
+                p = (p_lat_lista[i], p_lon[i])
+                print(p)
+                matriz_pixels_fogo.append(p)
+                
+                
+                    
 def process_fdcf(fdcf, v_extent, fdcf_diario):
     
     global dir_colortables, dir_in, dir_out
@@ -230,15 +239,6 @@ def process_fdcf(fdcf, v_extent, fdcf_diario):
     p_lon = lon[selected_fires]
     
     brasil = list(shpreader.Reader(dir_shapefiles + "divisao_estados/gadm36_BRA_0.shp").geometries())
-    
-    def processar_parte(indice_inicio, indice_fim, p_lat_lista, p_lon, brasil, matriz_pixels_fogo):
-        for i in range(indice_inicio, indice_fim):
-            if i < len(p_lat_lista):
-                if brasil[0].covers(Point(p_lon[i], p_lat_lista[i])):
-                    p = (p_lat_lista[i], p_lon[i])
-                    print(p)
-                    matriz_pixels_fogo.append(p)
-
 
     num_partes = 12
     tamanho_parte = len(p_lat) // num_partes
