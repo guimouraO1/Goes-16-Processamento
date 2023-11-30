@@ -1,6 +1,14 @@
 # Processamento de Imagens GOES-16
 
-Este repositório contém código Python para processar imagens do satélite GOES-16 e criar imagens True Color e Air Mass. As imagens processadas são geradas a partir dos dados das bandas 01, 02 e 03 para True Color e 08, 10, 12 e 13 para Air Mass. As imagens True Color são imagens naturais da Terra, enquanto as imagens Air Mass representam a distribuição vertical de massas de ar na atmosfera.
+Este repositório contém código Python para processar imagens do satélite GOES-16 criando imagens True Color, Air Mass, Land Surface Temperature.
+
+True Color: Imagens naturais da Terra. Bands necessárias 01, 02 e 03. 
+
+True Color com Black Marble: Imagens naturais da Terra + Black Marble. Bands necessárias 01, 02, 03 e 13. 
+
+Air Mass: Representa a distribuição vertical de massas de ar na atmosfera. Bands necessárias 08, 10, 12, 13.
+
+Land Surface Temperature: Temperatura radiativa da pele da terra derivada da radiação solar. Bands necessárias lst.
 
 ## Estrutura de Pastas
 
@@ -9,22 +17,31 @@ O repositório está estruturado da seguinte forma:
 ```
 /Goes-16-Processamento
     /colortables
+    /goes
     /logos
+    /Maps
+    /output
     /shapefiles
     airmass_rgb.py
-    remap.py
+    dirs.py
+    lst.py
     truecolor.py
+    truecolorN.py
+    utilities.py
     
 ```
 
 - **colortables:** Contém tabelas de cores usadas no processamento.
+- **goes:** Contém os arquivos netCDF para o processamento.
 - **logos:** Contém logotipos para adicionar às imagens geradas.
+- **Maps:** Contém rasters para o fundo das imagens.
 - **shapefiles:** Contém arquivos shapefile usados para adicionar informações geográficas às imagens processadas.
 - **airmass_rgb.py:** Script para processamento de imagens Air Mass.
-- **remap.py:** Script para reprojeção de dados.
+- **lst.py:** Script para processamento de imagens Land Surface Temperature.
 - **truecolor.py:** Script para processamento de imagens True Color.
 - **truecolorN.py:** Script para processamento de imagens True Color + banda 13 para lugares escuros.
-- **Processamento.py:** Script principal para iniciar o processamento.
+- **utilities.py:** Contém funções para reporjeção e outros.
+
 
 ## Pré-requisitos
 
@@ -38,46 +55,57 @@ Antes de executar os scripts, você precisa ter as seguintes bibliotecas Python 
 - `pyspectral`
 - `multiprocessing`
 - `logging`
+- `osgeo`
 
-Você também deve ter os dados de imagem das bandas 01, 02 e 03 para True Color e 08, 10, 12 e 13 para Air Mass disponíveis no diretório de entrada especificado.
 
-Ex: 
-    goes/band08/OR_ABI-L2-CMIPF-M6C08_G16_s20232641020207_e20232641029515_c20232641029592.nc
+## Pré-requisitos
+
+Antes de usar o script, certifique-se de ter os seguintes pacotes e ferramentas instalados:
+
+- [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
+
+No Linux, você pode criar um ambiente Conda com os pacotes necessários usando o seguinte comando:
+
+```bash
+conda create --name goes -c conda-forge matplotlib netcdf4 cartopy gdal pyspectral pyorbital numpy multiprocessing osgeo
+```
+
+Para ativar este ambiente, use
+```bash
+conda activate goes
+```
+Para desativar um ambiente ativo, use
+```bash
+conda deactivate
+```
+<br>
+<br>
 
 ## Instalação
 
 1. Clone este repositório para o seu ambiente local:
 
 ```bash
-git clone https://github.com/guimouraO1/TrueColor.git
+git clone https://github.com/guimouraO1/Goes-16-Processamento.git
 ```
-
-2. Instale as bibliotecas Python necessárias, se ainda não estiverem instaladas:
-
+2. Vá para a pasta
 ```bash
-pip install matplotlib numpy netCDF4 cartopy pyorbital pyspectral
-```
-Ou utilize o conda
-
-```bash
-conda create --name goes -c conda-forge matplotlib numpy netCDF4 cartopy pyorbital pyspectral
+cd /sua/pasta/Goes-16-Processamento/
 ```
 
 ## Configuração
 
-Antes de executar os scripts, você precisa criar as pastas goes/ e band?? que vc vai utilizar e os output/airmass e output/truecolor.
-
--Configure algumas variáveis no script:
+Antes de executar os scripts, você precisa configurar algumas variáveis:
 
 - `dir_main`: O diretório raiz do projeto.
 - `new_bands`: Coloque os arquivos netCDF4 das bandas dentro do dicionário de dados de banda correta.
 Certifique-se de que seus dados de entrada estejam disponíveis no diretório especificado em `dir_in`.
 
-Além disso, você pode configurar as variáveis `bands` e `process_br`/`process_sp` para controlar quais bandas e regiões você deseja processar.
+Além disso, você pode configurar as variáveis `bands` e `p_br`/`p_sp` para controlar quais bandas e regiões você deseja processar.
 
 ## Uso
 
-Para processar as imagens, execute o script desejado `truecolor.py` ou `airmass_rgb.py` para processar as imagens True Color ou Air Mass. 
+Para processar as imagens, execute o script desejado `truecolor.py`, `airmass_rgb.py` ou `lst.py`.
 
 Truecolor
 ```bash
@@ -86,6 +114,10 @@ python truecolor.py
 Air Mass
 ```bash
 python airmass_rgb.py
+```
+Land Surface Temperature
+```bash
+python lst.py
 ```
 As imagens processadas serão salvas no diretório especificado em `dir_out`.
 
@@ -99,17 +131,23 @@ Este código é distribuído sob a licença MIT. Consulte o arquivo LICENSE para
 
 ---
 
-## Example: NOAA GOES-16 truecolor Processing on CEPAGRI
+## Exemplo: NOAA GOES-16 truecolor Processing on CEPAGRI
 
 ![GOES-16 Satellite](shapefiles/exemplos/truecolor_br.png)
 ---
 ![GOES-16 Satellite](shapefiles/exemplos/truecolor_sp.png)
 ---
-## Example: NOAA GOES-16 Air Mass Processing on CEPAGRI
+## Exemplo: NOAA GOES-16 Air Mass Processing on CEPAGRI
 
 ![GOES-16 Satellite](shapefiles/exemplos/airmass_br.png)
 ---
 ![GOES-16 Satellite](shapefiles/exemplos/airmass_sp.png)
+
+## Exemplo: NOAA GOES-16 Land Surface Temperature on CEPAGRI
+
+![GOES-16 Satellite](shapefiles/exemplos/lst_br.png)
+---
+![GOES-16 Satellite](shapefiles/exemplos/lst_sp.png)
 ---
 **Author:** [Guilherme de Moura Oliveira]
 **Contact:** [guimoura@unicamp.br]

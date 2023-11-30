@@ -1,7 +1,7 @@
 #!/opt/miniconda3/envs/goes/bin/python3
 # -*- coding: utf-8 -*-
-# Packages = conda create --name goes -c conda-forge matplotlib netcdf4 cartopy boto3 gdal scipy pandas scp
-# Packages = apt install ffmpeg
+# Packages = conda create --name goes -c conda-forge matplotlib netcdf4 cartopy
+
 # ======================================================================================================
 # Manipulando imagens GOES-16 NetCDF's
 # ===================================# Bibliotecas necessarias =========================================
@@ -18,34 +18,15 @@ import time  # Utilitario para trabalhar com tempos
 import logging  # Utilitario para criar os logs
 from shutil import copyfile  # Utilitario para copia de arquivos
 from shapely.geometry import Point
-from shapely.ops import cascaded_union
 from dirs import get_dirs
-from utilities import area_para_recorte
-from utilities import adicionando_shapefile
-from utilities import adicionando_linhas
-from utilities import adicionando_descricao_imagem
-from utilities import adicionando_logos
-from utilities import apply_cira_stretch
-from utilities import applying_rayleigh_correction
-from utilities import calculating_lons_lats
-from remap import remap
+from utilities import area_para_recorte, remap, adicionando_shapefile, adicionando_descricao_imagem, adicionando_logos, apply_cira_stretch, applying_rayleigh_correction, calculating_lons_lats, download_prod
 from datetime import timedelta, datetime
-from utilities import download_prod
 import os
 import re
 from multiprocessing import Process, Manager
 from shapely.geometry import Point
 import shapely.speedups
 shapely.speedups.enable()
-
-dirs = get_dirs()
-dir_in = dirs['dir_in']
-dir_out = dirs['dir_out']
-dir_colortables = dirs['dir_colortables']
-dir_maps = dirs['dir_maps']
-dir_shapefiles = dirs['dir_shapefiles']
-dir_temp = dirs['dir_temp']
-
 
 def degrees(file_id):
         
@@ -200,6 +181,7 @@ def fdcf_tabela_hot_spots(date, ax):
 
     return fdcf_list
 
+
 def processar_parte(indice_inicio, indice_fim, p_lat_lista, p_lon, brasil, matriz_pixels_fogo):
     for i in range(indice_inicio, indice_fim):
         if i < len(p_lat_lista):
@@ -208,8 +190,7 @@ def processar_parte(indice_inicio, indice_fim, p_lat_lista, p_lon, brasil, matri
                 print(p)
                 matriz_pixels_fogo.append(p)
                 
-                
-                    
+                             
 def process_fdcf(fdcf, v_extent, fdcf_diario):
     
     global dir_colortables, dir_in, dir_out
@@ -392,10 +373,26 @@ def process_fdcf(fdcf, v_extent, fdcf_diario):
     print(f'{fdcf} - {v_extent} - {str(round(time.time() - processing_start_time, 4))} segundos')
 
 if __name__ == "__main__":
-      
+    
+    # Importa os diretórios do módulo dirs.py
+    dirs = get_dirs()
+    dir_in = dirs['dir_in']
+    dir_out = dirs['dir_out']
+    dir_colortables = dirs['dir_colortables']
+    dir_maps = dirs['dir_maps']
+    dir_shapefiles = dirs['dir_shapefiles']
+    dir_temp = dirs['dir_temp']
+    
+    # Faz o Donwload do arquivo FDCF
     fdcf = download_arquivos_fdcf()
-    v_extent = 'br'
+    
+    # Passa Param o processamento  
+    # || Se False > Gera arquivo txt com pontos dentro do brasil 
+    # || Se True > Pega todos os arquivos .txt armazenados em outpuy/fdcf/ e plota os pontos de fogo 
     fdcf_diario = False
     
-    process_fdcf(f'{dir_in}fdcf/{fdcf}.nc', v_extent, fdcf_diario)
+    # Inicia a função de processamento
+    process_fdcf(f'{dir_in}fdcf/{fdcf}.nc', 'br', fdcf_diario)
+    
+    # Remove o arquivo .nc baixado
     os.remove(f'{dir_in}fdcf/{fdcf}.nc')

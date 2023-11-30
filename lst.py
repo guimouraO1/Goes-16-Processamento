@@ -1,16 +1,11 @@
 # Required modules
-from netCDF4 import Dataset      # Read / Write NetCDF4 files
+from netCDF4 import Dataset      
 import matplotlib.pyplot as plt  # Plotting library
 from dirs import get_dirs
 from datetime import datetime, timedelta
-from utilities import area_para_recorte
-from utilities import adicionando_shapefile
-from utilities import adicionando_linhas
-from utilities import adicionando_descricao_imagem
-from utilities import adicionando_logos
+from utilities import area_para_recorte, remap, adicionando_shapefile, adicionando_linhas, adicionando_descricao_imagem, adicionando_logos
 import time
-import cartopy, cartopy.crs as ccrs    
-from remap import remap
+import cartopy, cartopy.crs as ccrs 
 import matplotlib
 matplotlib.use('Agg')# Force matplotlib to not use any Xwindows backend.
 import matplotlib.pyplot as plt  # Plotagem de resultados, textos, logos, etc.
@@ -21,16 +16,7 @@ from osgeo import osr  # Utilitario para a biblioteca GDAL
 from netCDF4 import Dataset  # Utilitario para a biblioteca NetCDF4
 import numpy as np  # Suporte para arrays e matrizes multidimensionais, com diversas funções matemáticas para trabalhar com estas estruturas
 import time  # Utilitario para trabalhar com tempos
-import cartopy.feature as cfeature # features
-from multiprocessing import Process  # Utilitario para multiprocessamento
 import logging
-import os
-
-dirs = get_dirs()
-dir_in = dirs['dir_in']
-dir_out = dirs['dir_out']
-dir_colortables = dirs['dir_colortables']
-dir_maps = dirs['dir_maps']
 
 
 def process_lst(file, v_extent):
@@ -167,12 +153,25 @@ def iniciar_processo_lst(p_br, p_sp, bands, new_bands):
                 logging.error(f"Erro ao criar processo: {e}")
 
 
+if __name__ == "__main__":
+    
+    # Importa os diretórios do módulo dirs.py
+    dirs = get_dirs()
+    dir_in = dirs['dir_in']
+    dir_out = dirs['dir_out']
+    dir_colortables = dirs['dir_colortables']
+    dir_maps = dirs['dir_maps']
+    
+    # Coloque as badas em goes/band0? e coloque o nome do arquivo aqui
+    new_bands = {'23': 'OR_ABI-L2-LST2KMF-M6_G16_s20233000900210_e20233000909518_c20233000910381.nc'}
 
-# Coloque as badas em goes/band0? e coloque o nome do arquivo aqui
-new_bands = {'23': 'OR_ABI-L2-LST2KMF-M6_G16_s20233000900210_e20233000909518_c20233000910381.nc'}
-bands = {}
-bands['23'] = True
-p_br = True
-p_sp = True
+    # Cria um dicionário de dados airmass True para processar a imagem
+    bands = {}
+    bands['23'] = True
 
-iniciar_processo_lst(p_br, p_sp, bands, new_bands)
+    # Define as Imagens que vão ser processadas
+    p_br = True
+    p_sp = True
+
+    # Inicia a função de processamento 
+    iniciar_processo_lst(p_br, p_sp, bands, new_bands)
