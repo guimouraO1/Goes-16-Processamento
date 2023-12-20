@@ -58,13 +58,10 @@ Antes de executar os scripts, você precisa ter as seguintes bibliotecas Python 
 - `osgeo`
 
 
-## Pré-requisitos
-
-Antes de usar o script, certifique-se de ter os seguintes pacotes e ferramentas instalados:
-
+Você também pode usar ambiente conda para baixar os pacotes necessários.
 - [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
 
-No Linux, você pode criar um ambiente Conda com os pacotes necessários usando o seguinte comando:
+Você pode criar um ambiente Conda com os pacotes necessários usando o seguinte comando:
 
 ```bash
 conda create --name goes -c conda-forge matplotlib netcdf4 cartopy gdal pyspectral pyorbital numpy multiprocessing osgeo
