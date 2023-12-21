@@ -10,7 +10,7 @@ import cartopy, cartopy.crs as ccrs                          # Plotar mapas
 import time as t                                             # Acesso e conversão de tempo
 from multiprocessing import Process  # Utilitario para multiprocessamento
 import logging
-from utilities import area_para_recorte, remap, adicionando_shapefile, adicionando_descricao_imagem, adicionando_logos, apply_cira_stretch, applying_rayleigh_correction, calculating_lons_lats, download_prod
+from utilities import area_para_recorte, remap, adicionando_shapefile, adicionando_descricao_imagem, adicionando_logos, apply_cira_stretch, applying_rayleigh_correction, calculating_lons_lats, adicionando_linhas, download_prod
 from dirs import get_dirs
 
 
