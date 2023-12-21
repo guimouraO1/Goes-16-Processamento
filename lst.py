@@ -1,10 +1,13 @@
 # Required modules
 from netCDF4 import Dataset      
+from netCDF4 import Dataset      
 import matplotlib.pyplot as plt  # Plotting library
 from dirs import get_dirs
 from datetime import datetime, timedelta
 from utilities import area_para_recorte, remap, adicionando_shapefile, adicionando_linhas, adicionando_descricao_imagem, adicionando_logos
+from utilities import area_para_recorte, remap, adicionando_shapefile, adicionando_linhas, adicionando_descricao_imagem, adicionando_logos
 import time
+import cartopy, cartopy.crs as ccrs 
 import cartopy, cartopy.crs as ccrs 
 import matplotlib
 matplotlib.use('Agg')# Force matplotlib to not use any Xwindows backend.
@@ -171,7 +174,7 @@ if __name__ == "__main__":
 
     # Define as Imagens que vão ser processadas
     p_br = True
-    p_sp = True
+    p_sp = False
 
     # Inicia a função de processamento 
     iniciar_processo_lst(p_br, p_sp, bands, new_bands)
