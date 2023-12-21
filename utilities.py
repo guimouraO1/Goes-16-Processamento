@@ -3,10 +3,12 @@ matplotlib.use('Agg')
 from netCDF4 import Dataset                                  # Lê / Escrever arquivos NetCDF4
 import datetime                                              # Biblioteca para trabalhar com datas
 from datetime import timedelta, datetime                     # Biblioteca para converter dia juliano para dd-mm-yyyy
+from datetime import timedelta, datetime                     # Biblioteca para converter dia juliano para dd-mm-yyyy
 import matplotlib.pyplot as plt                              # Biblioteca para plotar gráficos
 import matplotlib.colors                                     # Cores do Matplotlib
 import numpy as np                                           # Computação científica com Python
 import cartopy, cartopy.crs as ccrs                          # Plotar mapas
+import cartopy.io.shapereader as shpreader                   # Importar shapefiles     
 import cartopy.io.shapereader as shpreader                   # Importar shapefiles     
 from pyorbital import astronomy
 from pyspectral.rayleigh import Rayleigh                     # Correção atmosférica no espectro visível 
@@ -17,6 +19,12 @@ import os
 import boto3  # Amazon Web Services (AWS) SDK for Python
 from botocore import UNSIGNED  # boto3 config
 from botocore.config import Config  # boto3 config
+from osgeo import osr
+from osgeo import gdal
+import warnings
+warnings.filterwarnings("ignore")
+gdal.PushErrorHandler('CPLQuietErrorHandler') 
+import colorsys
 from osgeo import osr
 from osgeo import gdal
 import warnings
@@ -34,6 +42,7 @@ dir_shapefiles = dirs['dir_shapefiles']
 dir_colortables = dirs['dir_colortables']
 dir_logos = dirs['dir_logos']
 dir_out = dirs['dir_out']
+
 
 
 def adicionando_linhas(ax):
