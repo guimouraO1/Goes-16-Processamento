@@ -1,32 +1,19 @@
-
-#import matplotlib
-#matplotlib.use('Agg')
-from netCDF4 import Dataset                                  
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes                      
+from netCDF4 import Dataset                                                   
 import matplotlib.pyplot as plt                              
 import numpy as np                                           
-import cartopy, cartopy.crs as ccrs                          
-from remap import remap                                      
+import cartopy, cartopy.crs as ccrs                                                             
 import warnings
 warnings.filterwarnings("ignore")
 import datetime                                              
 from datetime import timedelta  
 import time as t                                             
-from remap import loadCPT
-from utilities import area_para_recorte
-from utilities import adicionando_shapefile
-from utilities import adicionando_linhas
-from utilities import adicionando_descricao_imagem
-from utilities import adicionando_logos
-from utilities import apply_cira_stretch
-from utilities import applying_rayleigh_correction
-from utilities import calculating_lons_lats
+from utilities import loadCPT, adicionando_linhas, area_para_recorte, remap, adicionando_shapefile, adicionando_descricao_imagem, adicionando_logos, apply_cira_stretch, applying_rayleigh_correction, calculating_lons_lats, download_prod
 from dirs import get_dirs
 import logging
-from osgeo import gdal, osr, ogr 
-import os
+from osgeo import gdal
 import warnings
 warnings.filterwarnings("ignore")
+
 
 def process_truecolor(rgb_type, v_extent, ch01, ch02, ch03, ch13):
     global dir_maps
@@ -185,6 +172,7 @@ def process_truecolor(rgb_type, v_extent, ch01, ch02, ch03, ch13):
 
     print(f'Total processing time: {round((t.time() - start),2)} seconds.')
 
+
 def iniciar_processo_truecolor(p_br, p_sp, bands, new_bands):
     # Checagem se e possivel gerar imagem TrueColor
     if bands['17']:        
@@ -227,24 +215,36 @@ def iniciar_processo_truecolor(p_br, p_sp, bands, new_bands):
                 logging.error(f"Erro ao criar processo: {e}")
 
 
-dirs = get_dirs()
-# Importando dirs do modulo dirs.py
-dir_maps = dirs['dir_maps']
-dir_in = dirs['dir_in']
-dir_out = dirs['dir_out']
-dir_shapefiles = dirs['dir_shapefiles']
-dir_colortables = dirs['dir_colortables']
-dir_logos = dirs['dir_logos']
-dir_out = dirs['dir_out']
+if __name__ == "__main__":
+    
+    # Importa os diretórios do módulo dirs.py
+    dirs = get_dirs()
+    dir_in = dirs['dir_in']
+    dir_out = dirs['dir_out']
+    dir_colortables = dirs['dir_colortables']
+    dir_maps = dirs['dir_maps']
+    dir_shapefiles = dirs['dir_shapefiles']
+    dir_temp = dirs['dir_temp']
 
-bands = {}
-bands['17'] = True
-p_br = False
-p_sp = True
-new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20233050910206_e20233050919514_c20233050919576.nc', 
-              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20233050910206_e20233050919514_c20233050919567.nc',
-              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20233050910206_e20233050919514_c20233050919566.nc',
-              '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20233050910206_e20233050919527_c20233050919586.nc'
-              }
+    # Cria um dicionário de dados airmass True para processar a imagem
+    bands = {}
+    bands['17'] = True
+    
+    # Cria 2 listas para armazenar o processamento em paralelo
+    process_br = []
+    process_sp = []
+    
+    # Define as Imagens que vão ser processadas
+    p_br = True
+    p_sp = False
+    
+    # Faça o download do arquivo e deixe na pasta goes/band e coloque o nome do arquivo em sua respectiva banda
+    new_bands = { 
+                '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20233050910206_e20233050919514_c20233050919576.nc', 
+                '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20233050910206_e20233050919514_c20233050919567.nc',
+                '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20233050910206_e20233050919514_c20233050919566.nc',
+                '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20233050910206_e20233050919527_c20233050919586.nc'
+                }
 
-iniciar_processo_truecolor(p_br, p_sp, bands, new_bands)
+    # Inicia a função de processamento
+    iniciar_processo_truecolor(p_br, p_sp, bands, new_bands)

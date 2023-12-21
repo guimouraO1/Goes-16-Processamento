@@ -8,18 +8,11 @@ import matplotlib.colors                                     # Cores do Matplotl
 import numpy as np                                           # Computação científica com Python
 import cartopy, cartopy.crs as ccrs                          # Plotar mapas
 import time as t                                             # Acesso e conversão de tempo
-from remap import remap                                      # Importar a função Remap
 from multiprocessing import Process  # Utilitario para multiprocessamento
 import logging
-from utilities import area_para_recorte
-from utilities import adicionando_shapefile
-from utilities import adicionando_linhas
-from utilities import adicionando_descricao_imagem
-from utilities import adicionando_logos
-from utilities import apply_cira_stretch
-from utilities import applying_rayleigh_correction
-from utilities import calculating_lons_lats
+from utilities import area_para_recorte, remap, adicionando_shapefile, adicionando_descricao_imagem, adicionando_logos, apply_cira_stretch, applying_rayleigh_correction, calculating_lons_lats, download_prod
 from dirs import get_dirs
+
 
 def process_truecolor(rgb_type, v_extent, ch01=None, ch02=None, ch03=None):
     global dir_out
@@ -197,26 +190,35 @@ def iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_ba
         process_sp.clear()
 
 
-dirs = get_dirs()
-# Importando dirs do modulo dirs.py
+if __name__ == "__main__":
+    
+    # Importa os diretórios do módulo dirs.py
+    dirs = get_dirs()
+    dir_in = dirs['dir_in']
+    dir_out = dirs['dir_out']
+    dir_colortables = dirs['dir_colortables']
+    dir_maps = dirs['dir_maps']
+    dir_shapefiles = dirs['dir_shapefiles']
+    dir_temp = dirs['dir_temp']
 
-dir_in = dirs['dir_in']
-dir_out = dirs['dir_out']
-dir_shapefiles = dirs['dir_shapefiles']
-dir_colortables = dirs['dir_colortables']
-dir_logos = dirs['dir_logos']
-dir_out = dirs['dir_out']
+    # Cria um dicionário de dados airmass True para processar a imagem
+    bands = {}
+    bands['17'] = True
+    
+    # Cria 2 listas para armazenar o processamento em paralelo
+    process_br = []
+    process_sp = []
+    
+    # Define as Imagens que vão ser processadas
+    p_br = True
+    p_sp = True
 
-bands = {}
-bands['17'] = True
-process_br = []
-process_sp = []
-p_br = True
-p_sp = False
-
-# Coloque as badas em goes/band0? e coloque o nome do arquivo aqui
-new_bands = { '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232711120209_e20232711129518_c20232711129578.nc', 
-              '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232711120209_e20232711129517_c20232711129568.nc',
-              '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232711120209_e20232711129517_c20232711129567.nc'}
-
-iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands)
+    # Faça o download do arquivo e deixe na pasta goes/band e coloque o nome do arquivo em sua respectiva banda
+    new_bands = { 
+                 '01': f'OR_ABI-L2-CMIPF-M6C01_G16_s20232711120209_e20232711129518_c20232711129578.nc', 
+                 '02': f'OR_ABI-L2-CMIPF-M6C02_G16_s20232711120209_e20232711129517_c20232711129568.nc',
+                 '03': f'OR_ABI-L2-CMIPF-M6C03_G16_s20232711120209_e20232711129517_c20232711129567.nc'
+                }
+    
+    # Inicia a função de processamento
+    iniciar_processo_truelocor(p_br, p_sp, bands, process_br, process_sp, new_bands)

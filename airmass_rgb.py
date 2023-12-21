@@ -5,12 +5,7 @@ import numpy as np                           # Import the Numpy package
 from netCDF4 import Dataset                  # Import the NetCDF Python interface
 import cartopy, cartopy.crs as ccrs          # Plot maps
 from datetime import datetime, timedelta     # Library to convert julian day to dd-mm-yyyy
-from utilities import area_para_recorte
-from utilities import adicionando_shapefile
-from utilities import adicionando_linhas
-from utilities import adicionando_descricao_imagem
-from utilities import adicionando_logos
-from remap import remap
+from utilities import area_para_recorte, remap, adicionando_shapefile, adicionando_linhas, adicionando_descricao_imagem, adicionando_logos
 import time as time    
 import logging
 from multiprocessing import Process  # Utilitario para multiprocessamento
@@ -55,7 +50,7 @@ def process_airmass(rgb_type, v_extent, path_ch08=None, path_ch10=None, path_ch1
 
 
     #------------------------------------------------------------------------------------------------------#
-    #-------------------------------------------Reprojetando----------------------------------------------#
+    #------------------------------------Reprojetando para Plate Carree------------------------------------#
     #------------------------------------------------------------------------------------------------------#
     # Call the reprojection funcion
     grid = remap(path_ch08, variable, extent, resolution)
@@ -138,29 +133,29 @@ def process_airmass(rgb_type, v_extent, path_ch08=None, path_ch10=None, path_ch1
     # Adicionando  linhas dos litorais
     adicionando_linhas(ax)    
     
-    # Defina as cores da colorbar
+    # Definindo cores do colorbar para Airmass
     colors = ['#b62007','#6f008b', '#0a0a8e', '#538234','#5C8C3A','#335a25', '#704c02', '#b57350', '#ffffff']
 
-    # Crie uma lista de posições normalizadas para as cores
+    # Cria uma lista de posições normalizadas para as cores
     color_positions = np.linspace(0, 1, len(colors))
 
-    # Crie um dicionário de cores segmentadas
+    # Cria um dicionário de cores segmentadas
     cmap_dict = {'red': [], 'green': [], 'blue': [], 'alpha': []}
 
     for color in colors:
-        rgba = to_rgba(color)  # Use a função to_rgba para converter a cor
+        rgba = to_rgba(color) 
         cmap_dict['red'].append((color_positions[colors.index(color)], rgba[0], rgba[0]))
         cmap_dict['green'].append((color_positions[colors.index(color)], rgba[1], rgba[1]))
         cmap_dict['blue'].append((color_positions[colors.index(color)], rgba[2], rgba[2]))
         cmap_dict['alpha'].append((color_positions[colors.index(color)], rgba[3], rgba[3]))
 
-    # Crie a paleta de cores personalizada
+    # Cria a paleta de cores personalizada
     custom_cmap = LinearSegmentedColormap('CustomCmap', cmap_dict)
     
     # Formatando a extensao da imagem, modificando ordem de minimo e maximo longitude e latitude
     img_extent = [extent[0], extent[2], extent[1], extent[3]]
 
-    # Plot the image
+    # Plota a imagem
     img = ax.imshow(RGB, origin='upper', cmap=custom_cmap, extent=img_extent)
         
     # Adicionando barra da paleta de cores de acordo com o canal
@@ -262,29 +257,36 @@ def iniciar_processo_airmass(p_br, p_sp, bands, process_br, process_sp, new_band
         process_sp.clear()
 
 
-dirs = get_dirs()
-# Importando dirs do modulo dirs.py
+if __name__ == '__main__':
+    
+    # Importa os diretórios do módulo dirs.py
+    dirs = get_dirs()
+    dir_in = dirs['dir_in']
+    dir_out = dirs['dir_out']
+    dir_shapefiles = dirs['dir_shapefiles']
+    dir_colortables = dirs['dir_colortables']
+    dir_logos = dirs['dir_logos']
+    dir_out = dirs['dir_out']
 
-dir_in = dirs['dir_in']
-dir_out = dirs['dir_out']
-dir_shapefiles = dirs['dir_shapefiles']
-dir_colortables = dirs['dir_colortables']
-dir_logos = dirs['dir_logos']
-dir_out = dirs['dir_out']
+    # Cria um dicionário de dados airmass True para processar a imagem
+    bands = {}
+    bands['22'] = True
+    
+    # Cria 2 listas para armazenar o processamento em paralelo
+    process_br = []
+    process_sp = []
+    
+    # Define as Imagens que vão ser processadas
+    p_br = True
+    p_sp = True
 
-
-bands = {}
-bands['22'] = True
-process_br = []
-process_sp = []
-p_br = True
-p_sp = True
-
-# Coloque as badas em goes/band0? e coloque o nome do arquivo aqui
-new_bands = { '08': f'OR_ABI-L2-CMIPF-M6C08_G16_s20232641020207_e20232641029515_c20232641029592.nc', 
-              '10': f'OR_ABI-L2-CMIPF-M6C10_G16_s20232641020207_e20232641029526_c20232641029583.nc',
-              '12': f'OR_ABI-L2-CMIPF-M6C12_G16_s20232641020207_e20232641029521_c20232641029598.nc',
-              '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20232641020207_e20232641029526_c20232641029588.nc'
-              }
-
-iniciar_processo_airmass(p_br, p_sp, bands, process_br, process_sp, new_bands)
+    # Faça o download do arquivo e deixe na pasta goes/band0 e coloque o nome do arquivo em sua respectiva banda
+    new_bands = { 
+                '08': f'OR_ABI-L2-CMIPF-M6C08_G16_s20232641020207_e20232641029515_c20232641029592.nc', 
+                '10': f'OR_ABI-L2-CMIPF-M6C10_G16_s20232641020207_e20232641029526_c20232641029583.nc',
+                '12': f'OR_ABI-L2-CMIPF-M6C12_G16_s20232641020207_e20232641029521_c20232641029598.nc',
+                '13': f'OR_ABI-L2-CMIPF-M6C13_G16_s20232641020207_e20232641029526_c20232641029588.nc'
+                }
+    
+    # Inicia a função de processamento
+    iniciar_processo_airmass(p_br, p_sp, bands, process_br, process_sp, new_bands)
